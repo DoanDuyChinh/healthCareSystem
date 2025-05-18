@@ -40,7 +40,7 @@ A comprehensive healthcare management system built with Django, featuring patien
 
 3. The application will be available at:
    ```
-   http://localhost
+   http://localhost:8000
    ```
 
 4. Default admin credentials:
