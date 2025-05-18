@@ -33,6 +33,7 @@ INSTALLED_APPS = [
     'lab',
     'billing',
     'adminpanel',
+    'chatbot',  # Add chatbot app
 ]
 
 MIDDLEWARE = [

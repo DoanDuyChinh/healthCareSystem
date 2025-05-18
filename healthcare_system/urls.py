@@ -13,6 +13,7 @@ urlpatterns = [
     path('lab/', include('lab.urls')),
     path('billing/', include('billing.urls')),
     path('adminpanel/', include('adminpanel.urls')),
+    path('chat/', include('chatbot.urls')),  # Add chatbot URLs
     # Use a different view for the root URL to avoid namespace conflicts
     path('', include('authentication.urls', namespace='home_auth')),
 ]

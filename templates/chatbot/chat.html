@@ -1,0 +1,358 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Healthcare Chatbot | Healthcare System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .chat-container {
+        height: calc(100vh - 200px);
+        min-height: 500px;
+    }
+    
+    .conversations-list {
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+    }
+    
+    .conversation-item {
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.2s;
+    }
+    
+    .conversation-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .conversation-item.active {
+        background-color: #e9ecef;
+        border-left: 3px solid #3498db;
+    }
+    
+    .chat-messages {
+        height: calc(100vh - 350px);
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    .message {
+        max-width: 75%;
+        margin-bottom: 1rem;
+        word-wrap: break-word;
+    }
+    
+    .message.user-message {
+        margin-left: auto;
+        background-color: #dcf8c6;
+        border-radius: 15px 15px 0 15px;
+    }
+    
+    .message.bot-message {
+        margin-right: auto;
+        background-color: #f1f0f0;
+        border-radius: 15px 15px 15px 0;
+    }
+    
+    .message-time {
+        font-size: 0.7rem;
+        color: #6c757d;
+        text-align: right;
+    }
+    
+    .chat-input {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+    }
+    
+    .chat-welcome {
+        display: flex;
+        flex-direction: column;
+        justify-content: center;
+        align-items: center;
+        height: 100%;
+        color: #6c757d;
+    }
+    
+    .typing-indicator {
+        display: inline-block;
+        position: relative;
+        margin-left: 10px;
+    }
+    
+    .typing-indicator span {
+        display: inline-block;
+        height: 10px;
+        width: 10px;
+        border-radius: 50%;
+        background-color: #3498db;
+        margin: 0 2px;
+        animation: typing 1s infinite ease-in-out;
+    }
+    
+    .typing-indicator span:nth-child(2) {
+        animation-delay: 0.2s;
+    }
+    
+    .typing-indicator span:nth-child(3) {
+        animation-delay: 0.4s;
+    }
+    
+    @keyframes typing {
+        0% { transform: translateY(0); }
+        50% { transform: translateY(-10px); }
+        100% { transform: translateY(0); }
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Conversations</h5>
+                    <button id="new-conversation-btn" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="conversations-list">
+                        {% if conversations %}
+                            {% for conv in conversations %}
+                                <div class="conversation-item p-3 {% if conv.id == current_conversation.id %}active{% endif %}" data-id="{{ conv.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ conv.title }}</h6>
+                                            <small class="text-muted">{{ conv.updated_at|date:"M d, Y H:i" }}</small>
+                                        </div>
+                                        <button class="btn btn-sm text-danger delete-conversation-btn" data-id="{{ conv.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center p-4">
+                                <p class="text-muted">No conversations yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card h-100 chat-container">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">
+                        {% if current_conversation %}
+                            {{ current_conversation.title }}
+                        {% else %}
+                            Chat with Healthcare Assistant
+                        {% endif %}
+                    </h5>
+                </div>
+                <div class="card-body position-relative p-0">
+                    <div class="chat-messages" id="chat-messages">
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="message p-3 {{ msg.sender }}-message">
+                                    <div class="message-content">{{ msg.content|linebreaks }}</div>
+                                    <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="chat-welcome">
+                                <div class="text-center">
+                                    <i class="fas fa-robot fa-4x mb-3"></i>
+                                    <h4>Welcome to Healthcare Assistant</h4>
+                                    <p>How can I help you today?</p>
+                                </div>
+                            </div>
+                        {% endif %}
+                        <div id="typing-indicator" class="message p-3 bot-message" style="display: none;">
+                            <div class="typing-indicator">
+                                <span></span>
+                                <span></span>
+                                <span></span>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-input">
+                        <form id="message-form" class="d-flex">
+                            {% csrf_token %}
+                            <input type="hidden" id="conversation-id" value="{{ current_conversation.id|default:'' }}">
+                            <input type="text" id="message-input" class="form-control me-2" placeholder="Type your message...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const conversationId = document.getElementById('conversation-id');
+        const chatMessages = document.getElementById('chat-messages');
+        const newConversationBtn = document.getElementById('new-conversation-btn');
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        const deleteButtons = document.querySelectorAll('.delete-conversation-btn');
+        const typingIndicator = document.getElementById('typing-indicator');
+        
+        // Scroll to bottom of chat
+        function scrollToBottom() {
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+        }
+        
+        // Scroll on load
+        scrollToBottom();
+        
+        // Show typing indicator
+        function showTypingIndicator() {
+            typingIndicator.style.display = 'block';
+            scrollToBottom();
+        }
+        
+        // Hide typing indicator
+        function hideTypingIndicator() {
+            typingIndicator.style.display = 'none';
+        }
+        
+        // Handle message submission
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to UI
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message p-3 user-message';
+            userMessageDiv.innerHTML = `
+                <div class="message-content">${message}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            chatMessages.appendChild(userMessageDiv);
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Scroll to bottom
+            scrollToBottom();
+            
+            // Show typing indicator
+            showTypingIndicator();
+            
+            // Send message to server
+            fetch('{% url "chatbot:send_message" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    message: message,
+                    conversation_id: conversationId.value
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Hide typing indicator
+                hideTypingIndicator();
+                
+                if (data.status === 'success') {
+                    // Set conversation ID if new
+                    if (!conversationId.value) {
+                        conversationId.value = data.conversation_id;
+                        // Reload page to show the new conversation in the list
+                        window.location.href = `{% url 'chatbot:chat' %}?conversation_id=${data.conversation_id}`;
+                    }
+                    
+                    // Add bot response to UI
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message p-3 bot-message';
+                    botMessageDiv.innerHTML = `
+                        <div class="message-content">${data.bot_message.content.replace(/\n/g, '<br>')}</div>
+                        <div class="message-time">${data.bot_message.timestamp}</div>
+                    `;
+                    chatMessages.appendChild(botMessageDiv);
+                    
+                    // Scroll to bottom
+                    scrollToBottom();
+                } else {
+                    console.error('Error:', data.message);
+                }
+            })
+            .catch(error => {
+                hideTypingIndicator();
+                console.error('Error:', error);
+            });
+        });
+        
+        // New conversation
+        newConversationBtn.addEventListener('click', function() {
+            fetch('{% url "chatbot:create_conversation" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = `{% url 'chatbot:chat' %}?conversation_id=${data.conversation_id}`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        
+        // Navigate to conversation
+        conversationItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-conversation-btn')) return;
+                
+                const id = this.dataset.id;
+                window.location.href = `{% url 'chatbot:chat' %}?conversation_id=${id}`;
+            });
+        });
+        
+        // Delete conversation
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                if (confirm('Are you sure you want to delete this conversation?')) {
+                    const id = this.dataset.id;
+                    
+                    fetch(`{% url 'chatbot:delete_conversation' conversation_id=999 %}`.replace('999', id), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = `{% url 'chatbot:chat' %}`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            });
+        });
+    });
+</script>
+{% endblock %}

@@ -184,6 +184,15 @@
         </div>
     </div>
     
+    <!-- Chat Button -->
+    {% if user.is_authenticated %}
+    <div class="position-fixed bottom-0 end-0 m-3" style="z-index: 1050;">
+        <a href="{% url 'chatbot:chat' %}" class="btn btn-primary btn-lg rounded-circle shadow">
+            <i class="fas fa-comment-dots"></i>
+        </a>
+    </div>
+    {% endif %}
+
     <!-- Bootstrap JS with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
     
