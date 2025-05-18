@@ -1,0 +1,274 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Admin Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Admin Dashboard</h1>
+        <div>
+            <span class="text-muted">Last updated: {% now "F d, Y H:i" %}</span>
+        </div>
+    </div>
+
+    <!-- Statistics Cards -->
+    <div class="row dashboard-stats mb-4">
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-primary h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                Total Patients</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_patients }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-users fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-success h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                Total Doctors</div>
+                            <div class="h5 mb-0 font-weight-bold">{{ total_doctors }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-md fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-info h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Today's Appointments
+                            </div>
+                            <div class="h5 mb-0 font-weight-bold">{{ today_appointments }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-day fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <div class="col-xl-3 col-md-6 mb-3">
+            <div class="card border-left-warning h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                Total Revenue</div>
+                            <div class="h5 mb-0 font-weight-bold">${{ total_revenue }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-dollar-sign fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Appointment Status Chart -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="m-0 font-weight-bold">Appointment Status Overview</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-md-3 col-6 text-center mb-3">
+                            <div class="d-inline-block p-3 rounded-circle bg-warning text-white">
+                                <i class="fas fa-hourglass-half"></i>
+                            </div>
+                            <h5 class="mt-2">{{ pending_appointments }}</h5>
+                            <p class="small text-muted mb-0">Pending</p>
+                        </div>
+                        <div class="col-md-3 col-6 text-center mb-3">
+                            <div class="d-inline-block p-3 rounded-circle bg-primary text-white">
+                                <i class="fas fa-calendar-check"></i>
+                            </div>
+                            <h5 class="mt-2">{{ approved_appointments }}</h5>
+                            <p class="small text-muted mb-0">Approved</p>
+                        </div>
+                        <div class="col-md-3 col-6 text-center mb-3">
+                            <div class="d-inline-block p-3 rounded-circle bg-success text-white">
+                                <i class="fas fa-check-circle"></i>
+                            </div>
+                            <h5 class="mt-2">{{ total_appointments|default:'0' }}</h5>
+                            <p class="small text-muted mb-0">Total</p>
+                        </div>
+                        <div class="col-md-3 col-6 text-center mb-3">
+                            <div class="d-inline-block p-3 rounded-circle bg-danger text-white">
+                                <i class="fas fa-exclamation-circle"></i>
+                            </div>
+                            <h5 class="mt-2">{{ unpaid_bills }}</h5>
+                            <p class="small text-muted mb-0">Unpaid Bills</p>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Low Stock Medicines -->
+        <div class="col-lg-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Low Stock Medicines</h6>
+                    <a href="{% url 'pharmacy:medicine_list' %}?low_stock=true" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Medicine</th>
+                                    <th>Stock</th>
+                                    <th>Action</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for medicine in low_stock_medicines|slice:":5" %}
+                                    <tr>
+                                        <td>{{ medicine.name }}</td>
+                                        <td>
+                                            <span class="badge bg-danger">{{ medicine.stock_quantity }}</span>
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'pharmacy:edit_medicine' medicine.id %}" class="btn btn-sm btn-warning">
+                                                <i class="fas fa-plus-circle me-1"></i> Restock
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="3" class="text-center py-3">
+                                            <p class="mb-0 text-success">
+                                                <i class="fas fa-check-circle me-1"></i>
+                                                All medicines are well-stocked!
+                                            </p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Latest Appointments -->
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h6 class="m-0 font-weight-bold">Latest Appointments</h6>
+                    <a href="{% url 'appointments:doctor_appointments' %}" class="btn btn-sm btn-primary">View All</a>
+                </div>
+                <div class="card-body p-0">
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Patient</th>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in latest_appointments %}
+                                    <tr>
+                                        <td>{{ appointment.patient.user.get_full_name }}</td>
+                                        <td>Dr. {{ appointment.doctor.user.get_full_name }}</td>
+                                        <td>{{ appointment.date|date:"M d, Y H:i" }}</td>
+                                        <td>
+                                            {% if appointment.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif appointment.status == 'approved' %}
+                                                <span class="badge bg-primary">Approved</span>
+                                            {% elif appointment.status == 'completed' %}
+                                                <span class="badge bg-success">Completed</span>
+                                            {% elif appointment.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="#" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% empty %}
+                                    <tr>
+                                        <td colspan="5" class="text-center py-3">
+                                            <p class="mb-0">No appointments found</p>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Quick Actions -->
+    <div class="row mb-4">
+        <div class="col-12">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h6 class="m-0 font-weight-bold">Quick Actions</h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                            <a href="{% url 'adminpanel:user_management' %}" class="card text-center p-3 bg-light text-decoration-none">
+                                <i class="fas fa-users-cog fa-3x mb-3 text-primary"></i>
+                                <h6 class="mb-0 text-dark">Manage Users</h6>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                            <a href="{% url 'appointments:doctor_appointments' %}" class="card text-center p-3 bg-light text-decoration-none">
+                                <i class="fas fa-calendar-alt fa-3x mb-3 text-success"></i>
+                                <h6 class="mb-0 text-dark">View Appointments</h6>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                            <a href="{% url 'adminpanel:reports' %}" class="card text-center p-3 bg-light text-decoration-none">
+                                <i class="fas fa-chart-line fa-3x mb-3 text-info"></i>
+                                <h6 class="mb-0 text-dark">Generate Reports</h6>
+                            </a>
+                        </div>
+                        <div class="col-lg-3 col-md-4 col-sm-6 mb-3">
+                            <a href="{% url 'billing:bill_list' %}" class="card text-center p-3 bg-light text-decoration-none">
+                                <i class="fas fa-file-invoice-dollar fa-3x mb-3 text-warning"></i>
+                                <h6 class="mb-0 text-dark">View Invoices</h6>
+                            </a>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

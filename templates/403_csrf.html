@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}CSRF Verification Failed{% endblock %}
+
+{% block content %}
+<div class="container py-5">
+    <div class="row">
+        <div class="col-md-8 mx-auto text-center">
+            <div class="card shadow-sm">
+                <div class="card-body p-5">
+                    <h1 class="text-danger mb-4">
+                        <i class="fas fa-exclamation-triangle"></i>
+                    </h1>
+                    <h2 class="mb-4">CSRF Verification Failed</h2>
+                    <p class="lead mb-4">For security reasons, your form submission could not be processed.</p>
+                    <p class="mb-4">This usually happens when:</p>
+                    <ul class="list-group list-group-flush mb-4 text-start">
+                        <li class="list-group-item bg-transparent">Your browser cookies are disabled</li>
+                        <li class="list-group-item bg-transparent">Your session has expired</li>
+                        <li class="list-group-item bg-transparent">You've opened the form in multiple tabs</li>
+                        <li class="list-group-item bg-transparent">You used the browser's back button after logging in</li>
+                    </ul>
+                    <div class="d-grid gap-2 d-md-block">
+                        <a href="{% url 'authentication:login' %}" class="btn btn-primary me-md-2">
+                            <i class="fas fa-sign-in-alt me-2"></i>Go to Login
+                        </a>
+                        <button onclick="window.location.reload()" class="btn btn-outline-secondary">
+                            <i class="fas fa-redo me-2"></i>Reload Page
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,95 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Insurance Claims | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Insurance Claims</h1>
+        <div class="btn-group">
+            <a href="{% url 'billing:insurance_claims' %}" class="btn btn-outline-primary {% if not status_filter %}active{% endif %}">All</a>
+            <a href="{% url 'billing:insurance_claims' %}?status=submitted" class="btn btn-outline-primary {% if status_filter == 'submitted' %}active{% endif %}">Submitted</a>
+            <a href="{% url 'billing:insurance_claims' %}?status=in_progress" class="btn btn-outline-primary {% if status_filter == 'in_progress' %}active{% endif %}">In Progress</a>
+            <a href="{% url 'billing:insurance_claims' %}?status=approved" class="btn btn-outline-primary {% if status_filter == 'approved' %}active{% endif %}">Approved</a>
+            <a href="{% url 'billing:insurance_claims' %}?status=partially_approved" class="btn btn-outline-primary {% if status_filter == 'partially_approved' %}active{% endif %}">Partially Approved</a>
+            <a href="{% url 'billing:insurance_claims' %}?status=rejected" class="btn btn-outline-primary {% if status_filter == 'rejected' %}active{% endif %}">Rejected</a>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        {% if claims %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Claim #</th>
+                            <th>Patient</th>
+                            <th>Bill #</th>
+                            <th>Provider</th>
+                            <th>Policy Number</th>
+                            <th>Claim Amount</th>
+                            <th>Status</th>
+                            <th>Submitted</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for claim in claims %}
+                            <tr>
+                                <td>{{ claim.id }}</td>
+                                <td>{{ claim.bill.patient.user.get_full_name }}</td>
+                                <td>
+                                    <a href="{% url 'billing:bill_detail' claim.bill.id %}">{{ claim.bill.id }}</a>
+                                </td>
+                                <td>{{ claim.insurance_provider }}</td>
+                                <td>{{ claim.policy_number }}</td>
+                                <td>${{ claim.claim_amount }}</td>
+                                <td>
+                                    {% if claim.status == 'submitted' %}
+                                        <span class="badge bg-info">Submitted</span>
+                                    {% elif claim.status == 'in_progress' %}
+                                        <span class="badge bg-primary">In Progress</span>
+                                    {% elif claim.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif claim.status == 'partially_approved' %}
+                                        <span class="badge bg-warning">Partially Approved</span>
+                                    {% elif claim.status == 'rejected' %}
+                                        <span class="badge bg-danger">Rejected</span>
+                                    {% endif %}
+                                </td>
+                                <td>{{ claim.submitted_at|date:"M d, Y" }}</td>
+                                <td>
+                                    {% if claim.status == 'submitted' or claim.status == 'in_progress' %}
+                                        <a href="{% url 'billing:process_claim' claim.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-check-circle me-1"></i> Process
+                                        </a>
+                                    {% else %}
+                                        <a href="{% url 'billing:process_claim' claim.id %}" class="btn btn-sm btn-outline-secondary">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if claims.has_other_pages %}
+                <div class="d-flex justify-content-center p-3">
+                    {% include "pagination.html" with page_obj=claims %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-file-medical text-muted fa-4x"></i>
+                </div>
+                <h5 class="text-muted">No insurance claims found</h5>
+                <p class="text-muted">There are no insurance claims matching your selected filter.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

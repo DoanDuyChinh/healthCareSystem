@@ -1,0 +1,97 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Patients | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Patients</h1>
+        <div class="d-flex">
+            <form class="d-flex me-2" method="GET" action="">
+                <input class="form-control me-2" type="search" name="search" placeholder="Search patients..." value="{{ search_query }}">
+                <button class="btn btn-outline-primary" type="submit"><i class="fas fa-search"></i></button>
+            </form>
+        </div>
+    </div>
+    
+    <div class="card shadow-sm">
+        {% if patients %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Patient</th>
+                            <th>Age</th>
+                            <th>Gender</th>
+                            <th>Blood Type</th>
+                            <th>Last Visit</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for patient in patients %}
+                            <tr>
+                                <td>
+                                    <div class="d-flex align-items-center">
+                                        {% if patient.user.profile_picture %}
+                                            <img src="{{ patient.user.profile_picture.url }}" class="rounded-circle me-2" width="40" height="40">
+                                        {% else %}
+                                            <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 40px; height: 40px;">
+                                                <span class="text-white" style="font-size: 16px;">{{ patient.user.first_name|first }}{{ patient.user.last_name|first }}</span>
+                                            </div>
+                                        {% endif %}
+                                        <div>
+                                            <span class="d-block fw-bold">{{ patient.user.get_full_name }}</span>
+                                            <small class="text-muted">{{ patient.user.email }}</small>
+                                        </div>
+                                    </div>
+                                </td>
+                                <td>{{ patient.get_age }} years</td>
+                                <td>{{ patient.get_gender_display }}</td>
+                                <td>{{ patient.blood_type|default:"Not specified" }}</td>
+                                <td>
+                                    {% with last_record=patient.medical_records.last %}
+                                        {% if last_record %}
+                                            {{ last_record.date|date:"M d, Y" }}
+                                        {% else %}
+                                            No prior visits
+                                        {% endif %}
+                                    {% endwith %}
+                                </td>
+                                <td>
+                                    <div class="btn-group">
+                                        <a href="{% url 'doctors:patient_detail' patient.id %}" class="btn btn-sm btn-primary">
+                                            <i class="fas fa-eye me-1"></i> View
+                                        </a>
+                                        <a href="{% url 'doctors:create_record' patient.id %}" class="btn btn-sm btn-success">
+                                            <i class="fas fa-file-medical me-1"></i> Add Record
+                                        </a>
+                                        <a href="{% url 'lab:order_test' patient.id %}" class="btn btn-sm btn-info">
+                                            <i class="fas fa-vial me-1"></i> Order Test
+                                        </a>
+                                    </div>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if patients.has_other_pages %}
+                <div class="d-flex justify-content-center p-3">
+                    {% include "pagination.html" with page_obj=patients %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-users text-muted fa-4x"></i>
+                </div>
+                <h5 class="text-muted">No patients found</h5>
+                <p class="text-muted">You haven't treated any patients yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

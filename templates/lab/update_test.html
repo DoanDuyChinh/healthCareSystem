@@ -1,0 +1,88 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Update Lab Test | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-vial me-2"></i>Update Lab Test</h3>
+                <a href="{% url 'lab:dashboard' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                </a>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ test.test_type }} for {{ test.patient.user.get_full_name }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <div><strong>Patient:</strong> {{ test.patient.user.get_full_name }}</div>
+                        <div><strong>Doctor:</strong> Dr. {{ test.doctor.user.get_full_name }}</div>
+                        <div><strong>Ordered:</strong> {{ test.ordered_at|date:"F d, Y H:i" }}</div>
+                        <div><strong>Description:</strong> {{ test.description }}</div>
+                    </div>
+                    
+                    <form method="post" enctype="multipart/form-data">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.result.id_for_label }}" class="form-label">Results</label>
+                            {{ form.result }}
+                            <div class="form-text small">Enter detailed test results and findings.</div>
+                            {% if form.result.errors %}
+                                <div class="text-danger small mt-1">{{ form.result.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.result_file.id_for_label }}" class="form-label">Results File</label>
+                            {{ form.result_file }}
+                            <div class="form-text small">Upload any relevant documents, images or PDF reports.</div>
+                            {% if form.result_file.errors %}
+                                <div class="text-danger small mt-1">{{ form.result_file.errors }}</div>
+                            {% endif %}
+                            
+                            {% if test.result_file %}
+                                <div class="mt-2">
+                                    <strong>Current file:</strong> 
+                                    <a href="{{ test.result_file.url }}" target="_blank">{{ test.result_file.name }}</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.technician_notes.id_for_label }}" class="form-label">Technician Notes</label>
+                            {{ form.technician_notes }}
+                            <div class="form-text small">Add any additional notes about the testing process or results.</div>
+                            {% if form.technician_notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.technician_notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'lab:dashboard' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-times me-2"></i>Cancel
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Test
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

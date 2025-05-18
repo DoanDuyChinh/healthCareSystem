@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Lab Tests | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Lab Tests</h1>
+        <a href="{% url 'patients:dashboard' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+        </a>
+    </div>
+    
+    <div class="card shadow-sm">
+        {% if tests %}
+            <div class="table-responsive">
+                <table class="table table-hover mb-0">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Test Type</th>
+                            <th>Ordered Date</th>
+                            <th>Doctor</th>
+                            <th>Status</th>
+                            <th>Completed Date</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for test in tests %}
+                            <tr>
+                                <td>{{ test.test_type }}</td>
+                                <td>{{ test.ordered_at|date:"M d, Y" }}</td>
+                                <td>Dr. {{ test.doctor.user.get_full_name }}</td>
+                                <td>
+                                    {% if test.status == 'ordered' %}
+                                        <span class="badge bg-warning">Ordered</span>
+                                    {% elif test.status == 'sample_collected' %}
+                                        <span class="badge bg-primary">Sample Collected</span>
+                                    {% elif test.status == 'processing' %}
+                                        <span class="badge bg-info">Processing</span>
+                                    {% elif test.status == 'completed' %}
+                                        <span class="badge bg-success">Completed</span>
+                                    {% elif test.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    {% if test.completed_at %}
+                                        {{ test.completed_at|date:"M d, Y" }}
+                                    {% else %}
+                                        -
+                                    {% endif %}
+                                </td>
+                                <td>
+                                    <a href="{% url 'lab:test_detail' test.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-eye me-1"></i> View
+                                    </a>
+                                    {% if test.result_file %}
+                                        <a href="{{ test.result_file.url }}" class="btn btn-sm btn-success" download>
+                                            <i class="fas fa-download me-1"></i> Download
+                                        </a>
+                                    {% endif %}
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+            
+            {% if tests.has_other_pages %}
+                <div class="d-flex justify-content-center p-3">
+                    {% include "pagination.html" with page_obj=tests %}
+                </div>
+            {% endif %}
+        {% else %}
+            <div class="text-center py-5">
+                <div class="mb-3">
+                    <i class="fas fa-vial text-muted fa-4x"></i>
+                </div>
+                <h5 class="text-muted">No lab tests found</h5>
+                <p class="text-muted">You don't have any lab tests ordered yet.</p>
+            </div>
+        {% endif %}
+    </div>
+</div>
+{% endblock %}

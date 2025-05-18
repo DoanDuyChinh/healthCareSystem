@@ -1,0 +1,223 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Patient Dashboard</h1>
+        <div>
+            <a href="{% url 'appointments:book' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-2"></i>Book Appointment
+            </a>
+        </div>
+    </div>
+    
+    <div class="row dashboard-stats">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Age</div>
+                            <div class="text-value">{{ profile.get_age }} years</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-birthday-cake text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Blood Type</div>
+                            <div class="text-value">{{ profile.blood_type|default:"Not specified" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-tint text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Upcoming Appointments</div>
+                            <div class="text-value">{{ appointments.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-check text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Medical Records</div>
+                            <div class="text-value">{{ medical_records.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-medical text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Upcoming Appointments</h5>
+                        <a href="{% url 'appointments:my_appointments' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if appointments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Doctor</th>
+                                        <th>Date & Time</th>
+                                        <th>Status</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for appointment in appointments %}
+                                        <tr>
+                                            <td>
+                                                <div class="d-flex align-items-center">
+                                                    {% if appointment.doctor.user.profile_picture %}
+                                                        <img src="{{ appointment.doctor.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32">
+                                                    {% else %}
+                                                        <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                            <span class="text-white" style="font-size: 14px;">{{ appointment.doctor.user.first_name|first }}{{ appointment.doctor.user.last_name|first }}</span>
+                                                        </div>
+                                                    {% endif %}
+                                                    <div>
+                                                        <span class="d-block">Dr. {{ appointment.doctor.user.get_full_name }}</span>
+                                                        <small class="text-muted">{{ appointment.doctor.specialty }}</small>
+                                                    </div>
+                                                </div>
+                                            </td>
+                                            <td>{{ appointment.date|date:"M d, Y" }} at {{ appointment.date|date:"h:i A" }}</td>
+                                            <td>
+                                                {% if appointment.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% elif appointment.status == 'approved' %}
+                                                    <span class="badge bg-success">Approved</span>
+                                                {% elif appointment.status == 'completed' %}
+                                                    <span class="badge bg-info">Completed</span>
+                                                {% elif appointment.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                <a href="#" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                                {% if appointment.status == 'pending' or appointment.status == 'approved' %}
+                                                    <a href="{% url 'appointments:cancel' appointment.id %}" class="btn btn-sm btn-outline-danger">
+                                                        <i class="fas fa-times"></i>
+                                                    </a>
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if appointments.has_other_pages %}
+                            <div class="d-flex justify-content-center mt-3">
+                                {% include "pagination.html" with page_obj=appointments %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-calendar-times text-muted fa-3x"></i>
+                            </div>
+                            <h6 class="text-muted">No upcoming appointments</h6>
+                            <a href="{% url 'appointments:book' %}" class="btn btn-sm btn-primary mt-2">Book an Appointment</a>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Recent Medical Records</h5>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if medical_records %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Doctor</th>
+                                        <th>Diagnosis</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for record in medical_records %}
+                                        <tr>
+                                            <td>{{ record.date|date:"M d, Y" }}</td>
+                                            <td>Dr. {{ record.doctor.user.get_full_name }}</td>
+                                            <td>{{ record.diagnosis|truncatechars:30 }}</td>
+                                            <td>
+                                                <a href="{% url 'patients:medical_record_detail' record.id %}" class="btn btn-sm btn-outline-primary">
+                                                    <i class="fas fa-eye"></i>
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                        
+                        {% if medical_records.has_other_pages %}
+                            <div class="d-flex justify-content-center mt-3">
+                                {% include "pagination.html" with page_obj=medical_records %}
+                            </div>
+                        {% endif %}
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-folder-open text-muted fa-3x"></i>
+                            </div>
+                            <h6 class="text-muted">No medical records found</h6>
+                            <p class="small text-muted">Records will appear after your doctor visits</p>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

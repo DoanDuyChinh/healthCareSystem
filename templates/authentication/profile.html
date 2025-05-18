@@ -1,0 +1,214 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Profile | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="row">
+        <div class="col-lg-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if user.profile_picture %}
+                        <img src="{{ user.profile_picture.url }}" class="profile-img mb-3">
+                    {% else %}
+                        <div class="profile-img d-flex align-items-center justify-content-center bg-primary mb-3 mx-auto">
+                            <span class="text-white" style="font-size: 50px;">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="mb-0">{{ user.get_full_name }}</h3>
+                    <p class="text-muted">{{ user.get_role_display }}</p>
+                    
+                    {% if user.role == 'patient' %}
+                        <a href="{% url 'patients:edit_profile' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                    {% elif user.role == 'doctor' %}
+                        <a href="{% url 'doctors:edit_profile' %}" class="btn btn-primary mt-3">
+                            <i class="fas fa-user-edit me-2"></i>Edit Profile
+                        </a>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-8">
+            <div class="card mb-4">
+                <div class="card-header">
+                    <i class="fas fa-user me-2"></i>Account Information
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Username</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.username }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Full Name</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.get_full_name }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Email</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.email }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Phone</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.phone_number|default:"Not provided" }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Address</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.address|default:"Not provided" }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Role</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.get_role_display }}
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="row mb-3">
+                        <div class="col-sm-3">
+                            <h6 class="mb-0">Member Since</h6>
+                        </div>
+                        <div class="col-sm-9 text-secondary">
+                            {{ user.date_joined|date:"F d, Y" }}
+                        </div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if user.role == 'patient' and user.patient_profile %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-heartbeat me-2"></i>Medical Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Date of Birth</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.patient_profile.date_of_birth|date:"F d, Y" }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Gender</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.patient_profile.get_gender_display }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Blood Type</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.patient_profile.blood_type|default:"Not provided" }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Height</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {% if user.patient_profile.height %}
+                                    {{ user.patient_profile.height }} cm
+                                {% else %}
+                                    Not provided
+                                {% endif %}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Weight</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {% if user.patient_profile.weight %}
+                                    {{ user.patient_profile.weight }} kg
+                                {% else %}
+                                    Not provided
+                                {% endif %}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% elif user.role == 'doctor' and user.doctor_profile %}
+                <div class="card mb-4">
+                    <div class="card-header">
+                        <i class="fas fa-user-md me-2"></i>Doctor Information
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Specialty</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.doctor_profile.specialty }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">License Number</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.doctor_profile.license_number }}
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Experience</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.doctor_profile.experience_years }} years
+                            </div>
+                        </div>
+                        <hr>
+                        <div class="row mb-3">
+                            <div class="col-sm-3">
+                                <h6 class="mb-0">Education</h6>
+                            </div>
+                            <div class="col-sm-9 text-secondary">
+                                {{ user.doctor_profile.education }}
+                            </div>
+                        </div>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

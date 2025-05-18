@@ -1,0 +1,153 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Medical Record | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-file-medical me-2"></i>Medical Record</h3>
+                <a href="{% url 'doctors:patient_detail' record.patient.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Patient
+                </a>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0">Record Details</h5>
+                        <span class="badge bg-light text-dark">{{ record.date|date:"F d, Y" }}</span>
+                    </div>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Patient:</div>
+                        <div class="col-md-9">{{ record.patient.user.get_full_name }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Symptoms:</div>
+                        <div class="col-md-9">{{ record.symptoms|linebreaks }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Diagnosis:</div>
+                        <div class="col-md-9">{{ record.diagnosis|linebreaks }}</div>
+                    </div>
+                    
+                    <div class="row mb-3">
+                        <div class="col-md-3 fw-bold">Treatment Plan:</div>
+                        <div class="col-md-9">{{ record.treatment_plan|linebreaks }}</div>
+                    </div>
+                    
+                    {% if record.follow_up_date %}
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Follow-up Date:</div>
+                            <div class="col-md-9">{{ record.follow_up_date|date:"F d, Y" }}</div>
+                        </div>
+                    {% endif %}
+                    
+                    {% if record.notes %}
+                        <div class="row mb-3">
+                            <div class="col-md-3 fw-bold">Additional Notes:</div>
+                            <div class="col-md-9">{{ record.notes|linebreaks }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-prescription-bottle-alt me-2"></i>Prescribed Medications</h5>
+                        <button class="btn btn-sm btn-light" data-bs-toggle="modal" data-bs-target="#addPrescriptionModal">
+                            <i class="fas fa-plus me-2"></i>Add Prescription
+                        </button>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if prescriptions %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Medication</th>
+                                        <th>Dosage</th>
+                                        <th>Frequency</th>
+                                        <th>Duration</th>
+                                        <th>Notes</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for prescription in prescriptions %}
+                                        <tr>
+                                            <td>{{ prescription.medication_name }}</td>
+                                            <td>{{ prescription.dosage }}</td>
+                                            <td>{{ prescription.frequency }}</td>
+                                            <td>{{ prescription.duration }}</td>
+                                            <td>{{ prescription.notes|default:"-" }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-prescription text-muted fa-3x"></i>
+                            </div>
+                            <h6 class="text-muted">No medications prescribed</h6>
+                            <button class="btn btn-sm btn-primary mt-2" data-bs-toggle="modal" data-bs-target="#addPrescriptionModal">
+                                Add Prescription
+                            </button>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Add Prescription Modal -->
+<div class="modal fade" id="addPrescriptionModal" tabindex="-1" aria-hidden="true">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title">Add Prescription</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+            </div>
+            <form method="post" action="{% url 'doctors:add_prescription' record.id %}">
+                {% csrf_token %}
+                <div class="modal-body">
+                    <div class="mb-3">
+                        <label for="medication_name" class="form-label">Medication Name</label>
+                        <input type="text" class="form-control" id="medication_name" name="medication_name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="dosage" class="form-label">Dosage</label>
+                        <input type="text" class="form-control" id="dosage" name="dosage" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="frequency" class="form-label">Frequency</label>
+                        <input type="text" class="form-control" id="frequency" name="frequency" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="duration" class="form-label">Duration</label>
+                        <input type="text" class="form-control" id="duration" name="duration" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="notes" class="form-label">Notes</label>
+                        <textarea class="form-control" id="notes" name="notes" rows="2"></textarea>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
+                    <button type="submit" class="btn btn-primary">Add Prescription</button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

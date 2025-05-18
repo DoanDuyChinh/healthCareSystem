@@ -1,0 +1,87 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Doctor Profile | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-md-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-user-md me-2"></i>Complete Your Doctor Profile</h4>
+                </div>
+                <div class="card-body">
+                    <p class="text-muted mb-4">Please provide your professional information to complete your doctor profile. This information will be visible to patients and staff.</p>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.specialty.id_for_label }}" class="form-label">Specialty <span class="text-danger">*</span></label>
+                                {{ form.specialty }}
+                                {% if form.specialty.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.specialty.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.license_number.id_for_label }}" class="form-label">License Number <span class="text-danger">*</span></label>
+                                {{ form.license_number }}
+                                {% if form.license_number.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.license_number.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.education.id_for_label }}" class="form-label">Education <span class="text-danger">*</span></label>
+                            {{ form.education }}
+                            <div class="form-text small">Please list your degrees, certifications, and educational institutions.</div>
+                            {% if form.education.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.education.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="{{ form.experience_years.id_for_label }}" class="form-label">Years of Experience <span class="text-danger">*</span></label>
+                                {{ form.experience_years }}
+                                {% if form.experience_years.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.experience_years.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="col-md-6">
+                                <label for="{{ form.consulting_fee.id_for_label }}" class="form-label">Consulting Fee <span class="text-danger">*</span></label>
+                                {{ form.consulting_fee }}
+                                <div class="form-text small">Standard consultation fee in USD.</div>
+                                {% if form.consulting_fee.errors %}
+                                    <div class="text-danger small mt-1">
+                                        {{ form.consulting_fee.errors }}
+                                    </div>
+                                {% endif %}
+                            </div>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end mt-4">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Save Profile
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

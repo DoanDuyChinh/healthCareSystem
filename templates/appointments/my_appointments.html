@@ -1,0 +1,183 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}My Appointments | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">My Appointments</h1>
+        <div>
+            <a href="{% url 'appointments:book' %}" class="btn btn-primary">
+                <i class="fas fa-calendar-plus me-2"></i>Book New Appointment
+            </a>
+        </div>
+    </div>
+    
+    <ul class="nav nav-tabs mb-4" id="appointmentsTab" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="upcoming-tab" data-bs-toggle="tab" data-bs-target="#upcoming" type="button" role="tab" aria-controls="upcoming" aria-selected="true">
+                Upcoming Appointments
+                {% if upcoming_appointments.count %}
+                    <span class="badge bg-primary ms-2">{{ upcoming_appointments.count }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="past-tab" data-bs-toggle="tab" data-bs-target="#past" type="button" role="tab" aria-controls="past" aria-selected="false">
+                Past Appointments
+                {% if past_appointments.count %}
+                    <span class="badge bg-secondary ms-2">{{ past_appointments.count }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="appointmentsTabContent">
+        <div class="tab-pane fade show active" id="upcoming" role="tabpanel" aria-labelledby="upcoming-tab">
+            <div class="card shadow-sm">
+                {% if upcoming_appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in upcoming_appointments %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if appointment.doctor.user.profile_picture %}
+                                                    <img src="{{ appointment.doctor.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32">
+                                                {% else %}
+                                                    <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                        <span class="text-white" style="font-size: 14px;">{{ appointment.doctor.user.first_name|first }}{{ appointment.doctor.user.last_name|first }}</span>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <span class="d-block">Dr. {{ appointment.doctor.user.get_full_name }}</span>
+                                                    <small class="text-muted">{{ appointment.doctor.specialty }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ appointment.date|date:"M d, Y" }} at {{ appointment.date|date:"h:i A" }}</td>
+                                        <td>{{ appointment.reason|truncatechars:40 }}</td>
+                                        <td>
+                                            {% if appointment.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif appointment.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif appointment.status == 'completed' %}
+                                                <span class="badge bg-info">Completed</span>
+                                            {% elif appointment.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            {% if appointment.status == 'pending' or appointment.status == 'approved' %}
+                                                <a href="{% url 'appointments:cancel' appointment.id %}" class="btn btn-sm btn-outline-danger" onclick="return confirm('Are you sure you want to cancel this appointment?')">
+                                                    <i class="fas fa-times"></i> Cancel
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if upcoming_appointments.has_other_pages %}
+                        <div class="pagination-container p-3">
+                            {% include "pagination.html" with page_obj=upcoming_appointments page_query_param="&upcoming_page=" %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-calendar-times text-muted fa-4x"></i>
+                        </div>
+                        <h5 class="text-muted">No upcoming appointments</h5>
+                        <p class="text-muted">Schedule your next appointment with our healthcare professionals.</p>
+                        <a href="{% url 'appointments:book' %}" class="btn btn-primary mt-2">
+                            <i class="fas fa-calendar-plus me-2"></i>Book an Appointment
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="past" role="tabpanel" aria-labelledby="past-tab">
+            <div class="card shadow-sm">
+                {% if past_appointments %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Doctor</th>
+                                    <th>Date & Time</th>
+                                    <th>Reason</th>
+                                    <th>Status</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for appointment in past_appointments %}
+                                    <tr>
+                                        <td>
+                                            <div class="d-flex align-items-center">
+                                                {% if appointment.doctor.user.profile_picture %}
+                                                    <img src="{{ appointment.doctor.user.profile_picture.url }}" class="rounded-circle me-2" width="32" height="32">
+                                                {% else %}
+                                                    <div class="bg-primary rounded-circle me-2 d-flex align-items-center justify-content-center" style="width: 32px; height: 32px;">
+                                                        <span class="text-white" style="font-size: 14px;">{{ appointment.doctor.user.first_name|first }}{{ appointment.doctor.user.last_name|first }}</span>
+                                                    </div>
+                                                {% endif %}
+                                                <div>
+                                                    <span class="d-block">Dr. {{ appointment.doctor.user.get_full_name }}</span>
+                                                    <small class="text-muted">{{ appointment.doctor.specialty }}</small>
+                                                </div>
+                                            </div>
+                                        </td>
+                                        <td>{{ appointment.date|date:"M d, Y" }} at {{ appointment.date|date:"h:i A" }}</td>
+                                        <td>{{ appointment.reason|truncatechars:40 }}</td>
+                                        <td>
+                                            {% if appointment.status == 'pending' %}
+                                                <span class="badge bg-warning">Pending</span>
+                                            {% elif appointment.status == 'approved' %}
+                                                <span class="badge bg-success">Approved</span>
+                                            {% elif appointment.status == 'completed' %}
+                                                <span class="badge bg-info">Completed</span>
+                                            {% elif appointment.status == 'cancelled' %}
+                                                <span class="badge bg-danger">Cancelled</span>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if past_appointments.has_other_pages %}
+                        <div class="pagination-container p-3">
+                            {% include "pagination.html" with page_obj=past_appointments page_query_param="&past_page=" %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-history text-muted fa-4x"></i>
+                        </div>
+                        <h5 class="text-muted">No past appointments</h5>
+                        <p class="text-muted">Your appointment history will appear here once you've had appointments.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

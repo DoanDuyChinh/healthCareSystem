@@ -1,0 +1,131 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Dashboard</h1>
+        <div>
+            <span class="text-muted">Welcome back, {{ user.get_full_name|default:user.username }}!</span>
+        </div>
+    </div>
+    
+    <div class="row dashboard-stats">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Your Role</div>
+                            <div class="text-value">{{ user.get_role_display }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-user-tag text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Account Status</div>
+                            <div class="text-value">
+                                {% if user.is_active %}
+                                    <span class="text-success">Active</span>
+                                {% else %}
+                                    <span class="text-danger">Inactive</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Join Date</div>
+                            <div class="text-value">{{ user.date_joined|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-calendar-alt text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Last Login</div>
+                            <div class="text-value">{{ user.last_login|date:"M d, Y" }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-info-circle me-2"></i>Information
+                </div>
+                <div class="card-body">
+                    <p>Welcome to the Healthcare Management System. This is your main dashboard.</p>
+                    <p>Based on your role, you can access different features of the system using the sidebar on the left.</p>
+                    <p>If you need assistance, please contact the system administrator.</p>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-lg-6 mb-4">
+            <div class="card">
+                <div class="card-header">
+                    <i class="fas fa-cog me-2"></i>Quick Actions
+                </div>
+                <div class="card-body">
+                    <div class="list-group">
+                        <a href="{% url 'authentication:profile' %}" class="list-group-item list-group-item-action">
+                            <i class="fas fa-user-circle me-2"></i>View Your Profile
+                        </a>
+                        
+                        {% if user.role == 'patient' %}
+                            <a href="{% url 'appointments:book' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-calendar-plus me-2"></i>Book an Appointment
+                            </a>
+                        {% elif user.role == 'doctor' %}
+                            <a href="{% url 'appointments:doctor_appointments' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-calendar-alt me-2"></i>View Your Appointments
+                            </a>
+                        {% elif user.role == 'admin' %}
+                            <a href="{% url 'adminpanel:user_management' %}" class="list-group-item list-group-item-action">
+                                <i class="fas fa-users-cog me-2"></i>Manage Users
+                            </a>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

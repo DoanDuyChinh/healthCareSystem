@@ -1,0 +1,145 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Billing Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Billing Dashboard</h1>
+        {% if user.role == 'admin' %}
+            <a href="{% url 'billing:generate_bill' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-2"></i>Generate Bill
+            </a>
+        {% endif %}
+    </div>
+    
+    <div class="row dashboard-stats">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Total Bills</div>
+                            <div class="text-value">{{ total_bills }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-file-invoice-dollar text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Unpaid Bills</div>
+                            <div class="text-value">{{ total_unpaid }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-circle text-danger"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Overdue Bills</div>
+                            <div class="text-value">{{ total_overdue }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clock text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Total Revenue</div>
+                            <div class="text-value">${{ total_revenue }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hand-holding-usd text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-12 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <div class="d-flex justify-content-between align-items-center">
+                        <h5 class="mb-0"><i class="fas fa-file-invoice me-2"></i>Pending Insurance Claims</h5>
+                        <a href="{% url 'billing:insurance_claims' %}" class="btn btn-sm btn-outline-primary">View All</a>
+                    </div>
+                </div>
+                <div class="card-body p-0">
+                    {% if pending_claims %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Claim #</th>
+                                        <th>Patient</th>
+                                        <th>Provider</th>
+                                        <th>Amount</th>
+                                        <th>Status</th>
+                                        <th>Submitted</th>
+                                        <th>Actions</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for claim in pending_claims %}
+                                        <tr>
+                                            <td>{{ claim.id }}</td>
+                                            <td>{{ claim.bill.patient.user.get_full_name }}</td>
+                                            <td>{{ claim.insurance_provider }}</td>
+                                            <td>${{ claim.claim_amount }}</td>
+                                            <td>
+                                                {% if claim.status == 'submitted' %}
+                                                    <span class="badge bg-info">Submitted</span>
+                                                {% elif claim.status == 'in_progress' %}
+                                                    <span class="badge bg-primary">In Progress</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>{{ claim.submitted_at|date:"M d, Y" }}</td>
+                                            <td>
+                                                <a href="{% url 'billing:process_claim' claim.id %}" class="btn btn-sm btn-primary">
+                                                    <i class="fas fa-check-circle me-1"></i> Process
+                                                </a>
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-clipboard-check text-muted fa-3x"></i>
+                            </div>
+                            <h6 class="text-muted">No pending insurance claims</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,282 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Bill Details | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Bill #{{ bill.id }}</h1>
+        <div>
+            <a href="{% url 'billing:bill_list' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-2"></i>Back to Bills
+            </a>
+            {% if bill.status != 'paid' and user.role == 'patient' %}
+                <a href="{% url 'billing:make_payment' bill.id %}" class="btn btn-success">
+                    <i class="fas fa-money-bill-wave me-2"></i>Make Payment
+                </a>
+            {% endif %}
+        </div>
+    </div>
+    
+    <div class="row">
+        <div class="col-lg-8">
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-file-invoice-dollar me-2"></i>Bill Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Patient:</div>
+                        <div class="col-sm-9">{{ bill.patient.user.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Bill Type:</div>
+                        <div class="col-sm-9">{{ bill.get_bill_type_display }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Amount:</div>
+                        <div class="col-sm-9">${{ bill.amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Amount Paid:</div>
+                        <div class="col-sm-9">${{ bill.amount_paid }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Balance:</div>
+                        <div class="col-sm-9">${{ bill.get_balance }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Status:</div>
+                        <div class="col-sm-9">
+                            {% if bill.status == 'unpaid' %}
+                                <span class="badge bg-danger">Unpaid</span>
+                            {% elif bill.status == 'partially_paid' %}
+                                <span class="badge bg-warning">Partially Paid</span>
+                            {% elif bill.status == 'paid' %}
+                                <span class="badge bg-success">Paid</span>
+                            {% elif bill.status == 'cancelled' %}
+                                <span class="badge bg-secondary">Cancelled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Created On:</div>
+                        <div class="col-sm-9">{{ bill.created_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-3 fw-bold">Due Date:</div>
+                        <div class="col-sm-9">
+                            {% if bill.due_date %}
+                                {{ bill.due_date|date:"F d, Y H:i" }}
+                                {% if bill.is_overdue %}
+                                    <span class="badge bg-danger ms-1">Overdue</span>
+                                {% endif %}
+                            {% else %}
+                                Not specified
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-0">
+                        <div class="col-sm-3 fw-bold">Description:</div>
+                        <div class="col-sm-9">{{ bill.description|linebreaks }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            {% if insurance_claim %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Insurance Claim</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Claim #:</div>
+                            <div class="col-sm-8">{{ insurance_claim.id }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Insurance Provider:</div>
+                            <div class="col-sm-8">{{ insurance_claim.insurance_provider }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Policy Number:</div>
+                            <div class="col-sm-8">{{ insurance_claim.policy_number }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Claim Amount:</div>
+                            <div class="col-sm-8">${{ insurance_claim.claim_amount }}</div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Approved Amount:</div>
+                            <div class="col-sm-8">
+                                {% if insurance_claim.approved_amount %}
+                                    ${{ insurance_claim.approved_amount }}
+                                {% else %}
+                                    Pending approval
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-sm-4 fw-bold">Status:</div>
+                            <div class="col-sm-8">
+                                {% if insurance_claim.status == 'submitted' %}
+                                    <span class="badge bg-info">Submitted</span>
+                                {% elif insurance_claim.status == 'in_progress' %}
+                                    <span class="badge bg-primary">In Progress</span>
+                                {% elif insurance_claim.status == 'approved' %}
+                                    <span class="badge bg-success">Approved</span>
+                                {% elif insurance_claim.status == 'partially_approved' %}
+                                    <span class="badge bg-warning">Partially Approved</span>
+                                {% elif insurance_claim.status == 'rejected' %}
+                                    <span class="badge bg-danger">Rejected</span>
+                                {% endif %}
+                            </div>
+                        </div>
+                        <div class="row mb-0">
+                            <div class="col-sm-4 fw-bold">Submitted On:</div>
+                            <div class="col-sm-8">{{ insurance_claim.submitted_at|date:"F d, Y" }}</div>
+                        </div>
+                    </div>
+                </div>
+            {% elif claim_form and bill.status != 'paid' %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-info text-white">
+                        <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Submit Insurance Claim</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'billing:submit_claim' bill.id %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ claim_form.insurance_provider.id_for_label }}" class="form-label">Insurance Provider <span class="text-danger">*</span></label>
+                                {{ claim_form.insurance_provider }}
+                                {% if claim_form.insurance_provider.errors %}
+                                    <div class="text-danger small mt-1">{{ claim_form.insurance_provider.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ claim_form.policy_number.id_for_label }}" class="form-label">Policy Number <span class="text-danger">*</span></label>
+                                {{ claim_form.policy_number }}
+                                {% if claim_form.policy_number.errors %}
+                                    <div class="text-danger small mt-1">{{ claim_form.policy_number.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ claim_form.claim_amount.id_for_label }}" class="form-label">Claim Amount <span class="text-danger">*</span></label>
+                                {{ claim_form.claim_amount }}
+                                {% if claim_form.claim_amount.errors %}
+                                    <div class="text-danger small mt-1">{{ claim_form.claim_amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ claim_form.notes.id_for_label }}" class="form-label">Notes</label>
+                                {{ claim_form.notes }}
+                                {% if claim_form.notes.errors %}
+                                    <div class="text-danger small mt-1">{{ claim_form.notes.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Claim
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+        
+        <div class="col-lg-4">
+            {% if payment_form and bill.status != 'paid' %}
+                <div class="card shadow-sm mb-4">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0"><i class="fas fa-money-bill-wave me-2"></i>Make Payment</h5>
+                    </div>
+                    <div class="card-body">
+                        <form method="post" action="{% url 'billing:make_payment' bill.id %}">
+                            {% csrf_token %}
+                            
+                            <div class="mb-3">
+                                <label for="{{ payment_form.amount.id_for_label }}" class="form-label">Amount <span class="text-danger">*</span></label>
+                                {{ payment_form.amount }}
+                                <div class="form-text small">Balance due: ${{ bill.get_balance }}</div>
+                                {% if payment_form.amount.errors %}
+                                    <div class="text-danger small mt-1">{{ payment_form.amount.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ payment_form.payment_method.id_for_label }}" class="form-label">Payment Method <span class="text-danger">*</span></label>
+                                {{ payment_form.payment_method }}
+                                {% if payment_form.payment_method.errors %}
+                                    <div class="text-danger small mt-1">{{ payment_form.payment_method.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ payment_form.transaction_id.id_for_label }}" class="form-label">Transaction ID</label>
+                                {{ payment_form.transaction_id }}
+                                <div class="form-text small">Optional reference number.</div>
+                                {% if payment_form.transaction_id.errors %}
+                                    <div class="text-danger small mt-1">{{ payment_form.transaction_id.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <div class="mb-3">
+                                <label for="{{ payment_form.notes.id_for_label }}" class="form-label">Notes</label>
+                                {{ payment_form.notes }}
+                                {% if payment_form.notes.errors %}
+                                    <div class="text-danger small mt-1">{{ payment_form.notes.errors }}</div>
+                                {% endif %}
+                            </div>
+                            
+                            <button type="submit" class="btn btn-success w-100">
+                                <i class="fas fa-check-circle me-2"></i>Pay Now
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            {% endif %}
+            
+            <div class="card shadow-sm">
+                <div class="card-header">
+                    <h5 class="mb-0"><i class="fas fa-history me-2"></i>Payment History</h5>
+                </div>
+                <div class="card-body p-0">
+                    {% if payments %}
+                        <div class="table-responsive">
+                            <table class="table table-hover mb-0">
+                                <thead class="table-light">
+                                    <tr>
+                                        <th>Date</th>
+                                        <th>Amount</th>
+                                        <th>Method</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for payment in payments %}
+                                        <tr>
+                                            <td>{{ payment.payment_date|date:"M d, Y" }}</td>
+                                            <td>${{ payment.amount }}</td>
+                                            <td>{{ payment.get_payment_method_display }}</td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <div class="mb-3">
+                                <i class="fas fa-money-bill-wave text-muted fa-3x"></i>
+                            </div>
+                            <h6 class="text-muted">No payments yet</h6>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

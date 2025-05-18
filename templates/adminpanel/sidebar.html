@@ -1,0 +1,46 @@
+<div class="d-flex flex-column p-3">
+    <div class="text-center mb-3">
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" class="profile-img mb-2">
+        {% else %}
+            <div class="profile-img d-flex align-items-center justify-content-center bg-primary mb-2">
+                <span class="text-white" style="font-size: 50px;">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+            </div>
+        {% endif %}
+        <h5>{{ user.get_full_name }}</h5>
+        <p class="text-muted small">Administrator</p>
+    </div>
+    <hr>
+    <div class="list-group rounded-0">
+        <a href="{% url 'adminpanel:dashboard' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+        </a>
+        <a href="{% url 'adminpanel:user_management' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-users-cog me-2"></i> User Management
+        </a>
+        <a href="{% url 'appointments:doctor_appointments' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-calendar-alt me-2"></i> Appointments
+        </a>
+        <a href="#collapseReports" class="list-group-item list-group-item-action" data-bs-toggle="collapse" role="button" aria-expanded="false">
+            <i class="fas fa-chart-bar me-2"></i> Reports
+            <i class="fas fa-angle-down float-end"></i>
+        </a>
+        <div class="collapse" id="collapseReports">
+            <a href="{% url 'adminpanel:reports' %}" class="list-group-item list-group-item-action ps-5">
+                <i class="fas fa-chart-line me-2"></i> Financial Reports
+            </a>
+            <a href="{% url 'adminpanel:reports' %}" class="list-group-item list-group-item-action ps-5">
+                <i class="fas fa-chart-pie me-2"></i> Patient Statistics
+            </a>
+        </div>
+        <a href="{% url 'billing:bill_list' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-file-invoice-dollar me-2"></i> Billing
+        </a>
+        <a href="{% url 'pharmacy:medicine_list' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-pills me-2"></i> Pharmacy Inventory
+        </a>
+        <a href="{% url 'adminpanel:system_settings' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-cogs me-2"></i> System Settings
+        </a>
+    </div>
+</div>

@@ -1,0 +1,123 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lab Test Details | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-vial me-2"></i>Lab Test Details</h3>
+                {% if user.role == 'patient' %}
+                    <a href="{% url 'lab:patient_tests' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to My Tests
+                    </a>
+                {% elif user.role == 'doctor' %}
+                    <a href="{% url 'doctors:patient_detail' test.patient.id %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Patient
+                    </a>
+                {% else %}
+                    <a href="{% url 'lab:dashboard' %}" class="btn btn-outline-primary">
+                        <i class="fas fa-arrow-left me-2"></i>Back to Dashboard
+                    </a>
+                {% endif %}
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">{{ test.test_type }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Patient:</div>
+                        <div class="col-md-8">{{ test.patient.user.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Doctor:</div>
+                        <div class="col-md-8">Dr. {{ test.doctor.user.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Test Type:</div>
+                        <div class="col-md-8">{{ test.test_type }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Description:</div>
+                        <div class="col-md-8">{{ test.description }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Status:</div>
+                        <div class="col-md-8">
+                            {% if test.status == 'ordered' %}
+                                <span class="badge bg-warning">Ordered</span>
+                            {% elif test.status == 'sample_collected' %}
+                                <span class="badge bg-primary">Sample Collected</span>
+                            {% elif test.status == 'processing' %}
+                                <span class="badge bg-info">Processing</span>
+                            {% elif test.status == 'completed' %}
+                                <span class="badge bg-success">Completed</span>
+                            {% elif test.status == 'cancelled' %}
+                                <span class="badge bg-danger">Cancelled</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-md-4 fw-bold">Ordered Date:</div>
+                        <div class="col-md-8">{{ test.ordered_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                    {% if test.completed_at %}
+                        <div class="row mb-3">
+                            <div class="col-md-4 fw-bold">Completed Date:</div>
+                            <div class="col-md-8">{{ test.completed_at|date:"F d, Y H:i" }}</div>
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+            
+            {% if test.status == 'completed' %}
+                <div class="card shadow-sm">
+                    <div class="card-header bg-success text-white">
+                        <h5 class="mb-0">Test Results</h5>
+                    </div>
+                    <div class="card-body">
+                        <div class="mb-4">
+                            <h6 class="fw-bold">Results Summary:</h6>
+                            <div class="p-3 bg-light rounded">
+                                {{ test.result|linebreaks }}
+                            </div>
+                        </div>
+                        
+                        {% if test.result_file %}
+                            <div class="mb-4">
+                                <h6 class="fw-bold">Result Documents:</h6>
+                                
+                                <!-- Display image preview if file is an image -->
+                                {% if test.result_file.url|lower|slice:"-4:" == ".jpg" or test.result_file.url|lower|slice:"-4:" == ".png" or test.result_file.url|lower|slice:"-5:" == ".jpeg" or test.result_file.url|lower|slice:"-4:" == ".gif" %}
+                                    <div class="mb-3 text-center">
+                                        <img src="{{ test.result_file.url }}" class="img-fluid rounded" style="max-height: 400px;" alt="Test Result Image">
+                                    </div>
+                                {% endif %}
+                                
+                                <div class="d-grid gap-2 d-md-flex justify-content-md-start">
+                                    <a href="{{ test.result_file.url }}" class="btn btn-primary" download>
+                                        <i class="fas fa-download me-2"></i>Download Results
+                                    </a>
+                                </div>
+                            </div>
+                        {% endif %}
+                        
+                        {% if test.technician_notes %}
+                            <div>
+                                <h6 class="fw-bold">Lab Technician Notes:</h6>
+                                <div class="p-3 bg-light rounded">
+                                    {{ test.technician_notes|linebreaks }}
+                                </div>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            {% endif %}
+        </div>
+    </div>
+</div>
+{% endblock %}

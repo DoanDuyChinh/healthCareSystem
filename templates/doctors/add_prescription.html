@@ -1,0 +1,90 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Add Prescription | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Add Prescription</h1>
+        <div>
+            <a href="{% url 'doctors:record_detail' record.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Record
+            </a>
+        </div>
+    </div>
+
+    <div class="card shadow-sm">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Prescription Details</h5>
+        </div>
+        <div class="card-body">
+            <div class="mb-4">
+                <h6 class="fw-bold">Medical Record Information:</h6>
+                <p class="mb-1">
+                    <span class="text-muted">Patient:</span> 
+                    {{ record.patient.user.get_full_name }}
+                </p>
+                <p class="mb-1">
+                    <span class="text-muted">Date:</span> 
+                    {{ record.date|date:"F d, Y" }}
+                </p>
+                <p class="mb-0">
+                    <span class="text-muted">Diagnosis:</span>
+                    {{ record.diagnosis }}
+                </p>
+            </div>
+
+            <form method="post">
+                {% csrf_token %}
+                
+                <div class="mb-3">
+                    <label for="{{ form.medication_name.id_for_label }}" class="form-label">Medication Name</label>
+                    {{ form.medication_name }}
+                    {% if form.medication_name.errors %}
+                        <div class="text-danger small">{{ form.medication_name.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.dosage.id_for_label }}" class="form-label">Dosage</label>
+                    {{ form.dosage }}
+                    {% if form.dosage.errors %}
+                        <div class="text-danger small">{{ form.dosage.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.frequency.id_for_label }}" class="form-label">Frequency</label>
+                    {{ form.frequency }}
+                    {% if form.frequency.errors %}
+                        <div class="text-danger small">{{ form.frequency.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.duration.id_for_label }}" class="form-label">Duration</label>
+                    {{ form.duration }}
+                    {% if form.duration.errors %}
+                        <div class="text-danger small">{{ form.duration.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="mb-3">
+                    <label for="{{ form.notes.id_for_label }}" class="form-label">Notes (Optional)</label>
+                    {{ form.notes }}
+                    {% if form.notes.errors %}
+                        <div class="text-danger small">{{ form.notes.errors }}</div>
+                    {% endif %}
+                </div>
+                
+                <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                    <button type="submit" class="btn btn-primary">
+                        <i class="fas fa-save me-1"></i> Save Prescription
+                    </button>
+                </div>
+            </form>
+        </div>
+    </div>
+</div>
+{% endblock %}

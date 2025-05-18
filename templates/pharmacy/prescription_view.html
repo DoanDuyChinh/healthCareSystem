@@ -1,0 +1,140 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Prescription | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Prescription Details</h1>
+        {% if user.role == 'patient' %}
+            <a href="{% url 'patients:medical_record_detail' prescription.record.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Medical Record
+            </a>
+        {% elif user.role == 'doctor' %}
+            <a href="{% url 'doctors:record_detail' prescription.record.id %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Medical Record
+            </a>
+        {% else %}
+            <a href="{% url 'pharmacy:dashboard' %}" class="btn btn-outline-primary">
+                <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+            </a>
+        {% endif %}
+    </div>
+
+    <div class="row">
+        <!-- Prescription Information -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Prescription #{{ prescription.id }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="text-muted">Medication:</span>
+                        <span class="fw-bold">{{ prescription.medication_name }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Dosage:</span>
+                        <span class="fw-bold">{{ prescription.dosage }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Frequency:</span>
+                        <span class="fw-bold">{{ prescription.frequency }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Duration:</span>
+                        <span class="fw-bold">{{ prescription.duration }}</span>
+                    </div>
+                    {% if prescription.notes %}
+                        <div class="mb-3">
+                            <span class="text-muted">Notes:</span>
+                            <p class="mt-1">{{ prescription.notes }}</p>
+                        </div>
+                    {% endif %}
+                    <div class="mb-3">
+                        <span class="text-muted">Prescribed On:</span>
+                        <span class="fw-bold">{{ prescription.record.date|date:"F d, Y" }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Prescribed By:</span>
+                        <span class="fw-bold">Dr. {{ prescription.record.doctor.user.get_full_name }}</span>
+                    </div>
+                    <div class="mb-0">
+                        <span class="text-muted">Patient:</span>
+                        <span class="fw-bold">{{ prescription.record.patient.user.get_full_name }}</span>
+                    </div>
+                </div>
+                {% if user.role == 'patient' and not dispenses %}
+                    <div class="card-footer bg-white">
+                        <a href="{% url 'pharmacy:request_medicine' prescription.id %}" class="btn btn-primary">
+                            <i class="fas fa-pills me-1"></i> Request Medicine
+                        </a>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+
+        <!-- Dispensation History -->
+        <div class="col-md-6 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Dispensation History</h5>
+                </div>
+                <div class="card-body">
+                    {% if dispenses %}
+                        <div class="table-responsive">
+                            <table class="table table-hover">
+                                <thead>
+                                    <tr>
+                                        <th>Medicine</th>
+                                        <th>Qty</th>
+                                        <th>Status</th>
+                                        <th>Date</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {% for dispense in dispenses %}
+                                        <tr>
+                                            <td>{{ dispense.medicine.name }}</td>
+                                            <td>{{ dispense.quantity }}</td>
+                                            <td>
+                                                {% if dispense.status == 'pending' %}
+                                                    <span class="badge bg-warning">Pending</span>
+                                                {% elif dispense.status == 'dispensed' %}
+                                                    <span class="badge bg-success">Dispensed</span>
+                                                {% elif dispense.status == 'cancelled' %}
+                                                    <span class="badge bg-danger">Cancelled</span>
+                                                {% endif %}
+                                            </td>
+                                            <td>
+                                                {% if dispense.status == 'dispensed' %}
+                                                    {{ dispense.dispensed_at|date:"M d, Y" }}
+                                                {% else %}
+                                                    {{ dispense.requested_at|date:"M d, Y" }}
+                                                {% endif %}
+                                            </td>
+                                        </tr>
+                                    {% endfor %}
+                                </tbody>
+                            </table>
+                        </div>
+                    {% else %}
+                        <div class="text-center py-4">
+                            <i class="fas fa-pills fa-3x text-muted mb-3"></i>
+                            <p class="mb-0">No medicine has been requested or dispensed for this prescription yet.</p>
+                            {% if user.role == 'patient' %}
+                                <div class="mt-3">
+                                    <a href="{% url 'pharmacy:request_medicine' prescription.id %}" class="btn btn-primary">
+                                        <i class="fas fa-pills me-1"></i> Request Medicine
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    {% endif %}
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

@@ -1,0 +1,34 @@
+<div class="d-flex flex-column p-3">
+    <div class="text-center mb-3">
+        {% if user.profile_picture %}
+            <img src="{{ user.profile_picture.url }}" class="profile-img mb-2">
+        {% else %}
+            <div class="profile-img d-flex align-items-center justify-content-center bg-primary mb-2">
+                <span class="text-white" style="font-size: 50px;">{{ user.first_name|first }}{{ user.last_name|first }}</span>
+            </div>
+        {% endif %}
+        <h5>{{ user.get_full_name }}</h5>
+        <p class="text-muted small">Patient</p>
+    </div>
+    <hr>
+    <div class="list-group rounded-0">
+        <a href="{% url 'patients:dashboard' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-tachometer-alt me-2"></i> Dashboard
+        </a>
+        <a href="{% url 'appointments:book' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-calendar-plus me-2"></i> Book Appointment
+        </a>
+        <a href="{% url 'appointments:my_appointments' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-calendar-check me-2"></i> My Appointments
+        </a>
+        <a href="{% url 'lab:patient_tests' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-vial me-2"></i> My Lab Tests
+        </a>
+        <a href="{% url 'billing:bill_list' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-file-invoice-dollar me-2"></i> Billing & Payment
+        </a>
+        <a href="{% url 'patients:edit_profile' %}" class="list-group-item list-group-item-action">
+            <i class="fas fa-user-edit me-2"></i> Edit Profile
+        </a>
+    </div>
+</div>

@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Update Appointment Status | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h4 class="mb-0"><i class="fas fa-calendar-check me-2"></i>Update Appointment Status</h4>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <div class="row">
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Patient:</strong> {{ appointment.patient.user.get_full_name }}</p>
+                                <p class="mb-1"><strong>Date & Time:</strong> {{ appointment.date|date:"F d, Y" }} at {{ appointment.date|date:"h:i A" }}</p>
+                            </div>
+                            <div class="col-md-6">
+                                <p class="mb-1"><strong>Current Status:</strong> 
+                                    {% if appointment.status == 'pending' %}
+                                        <span class="badge bg-warning">Pending</span>
+                                    {% elif appointment.status == 'approved' %}
+                                        <span class="badge bg-success">Approved</span>
+                                    {% elif appointment.status == 'completed' %}
+                                        <span class="badge bg-info">Completed</span>
+                                    {% elif appointment.status == 'cancelled' %}
+                                        <span class="badge bg-danger">Cancelled</span>
+                                    {% endif %}
+                                </p>
+                                <p class="mb-1"><strong>Reason:</strong> {{ appointment.reason }}</p>
+                            </div>
+                        </div>
+                    </div>
+                    
+                    <form method="post" class="needs-validation" novalidate>
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Update Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.status.errors }}
+                                </div>
+                            {% endif %}
+                            
+                            {% if form.instance.status != 'completed' %}
+                            <div class="form-text text-info mt-2">
+                                <i class="fas fa-info-circle me-1"></i> When marking as "Completed":
+                                <ul class="mt-1 small">
+                                    <li>A bill will be automatically generated</li>
+                                    <li>You'll be redirected to create a medical record</li>
+                                </ul>
+                            </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes }}
+                            <div class="form-text small">Additional notes or instructions for the patient.</div>
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">
+                                    {{ form.notes.errors }}
+                                </div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <a href="{% url 'appointments:doctor_appointments' %}" class="btn btn-secondary me-md-2">
+                                <i class="fas fa-arrow-left me-2"></i>Back
+                            </a>
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-2"></i>Update Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

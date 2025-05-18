@@ -1,0 +1,121 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Process Claim | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-file-medical me-2"></i>Process Insurance Claim</h3>
+                <a href="{% url 'billing:insurance_claims' %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Claims
+                </a>
+            </div>
+            
+            <div class="card shadow-sm mb-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Claim #{{ claim.id }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Patient:</div>
+                        <div class="col-sm-8">{{ claim.bill.patient.user.get_full_name }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Bill #:</div>
+                        <div class="col-sm-8">{{ claim.bill.id }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Bill Amount:</div>
+                        <div class="col-sm-8">${{ claim.bill.amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Remaining Balance:</div>
+                        <div class="col-sm-8">${{ claim.bill.get_balance }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Insurance Provider:</div>
+                        <div class="col-sm-8">{{ claim.insurance_provider }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Policy Number:</div>
+                        <div class="col-sm-8">{{ claim.policy_number }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Claim Amount:</div>
+                        <div class="col-sm-8">${{ claim.claim_amount }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Submitted Date:</div>
+                        <div class="col-sm-8">{{ claim.submitted_at|date:"F d, Y H:i" }}</div>
+                    </div>
+                    <div class="row mb-3">
+                        <div class="col-sm-4 fw-bold">Current Status:</div>
+                        <div class="col-sm-8">
+                            {% if claim.status == 'submitted' %}
+                                <span class="badge bg-info">Submitted</span>
+                            {% elif claim.status == 'in_progress' %}
+                                <span class="badge bg-primary">In Progress</span>
+                            {% elif claim.status == 'approved' %}
+                                <span class="badge bg-success">Approved</span>
+                            {% elif claim.status == 'partially_approved' %}
+                                <span class="badge bg-warning">Partially Approved</span>
+                            {% elif claim.status == 'rejected' %}
+                                <span class="badge bg-danger">Rejected</span>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="row mb-0">
+                        <div class="col-sm-4 fw-bold">Notes:</div>
+                        <div class="col-sm-8">{{ claim.notes|default:"No notes provided"|linebreaks }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0">Update Claim Status</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status <span class="text-danger">*</span></label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small mt-1">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.approved_amount.id_for_label }}" class="form-label">Approved Amount</label>
+                            {{ form.approved_amount }}
+                            <div class="form-text small">Amount to be paid by insurance (required for approved or partially approved claims).</div>
+                            {% if form.approved_amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.approved_amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-save me-2"></i>Update Claim Status
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

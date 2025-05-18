@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Submit Insurance Claim | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="row">
+        <div class="col-lg-8 mx-auto">
+            <div class="d-flex justify-content-between align-items-center mb-4">
+                <h3><i class="fas fa-file-medical me-2"></i>Submit Insurance Claim</h3>
+                <a href="{% url 'billing:bill_detail' bill.id %}" class="btn btn-outline-primary">
+                    <i class="fas fa-arrow-left me-2"></i>Back to Bill
+                </a>
+            </div>
+            
+            <div class="card shadow-sm">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0">Insurance Claim for Bill #{{ bill.id }}</h5>
+                </div>
+                <div class="card-body">
+                    <div class="alert alert-info mb-4">
+                        <i class="fas fa-info-circle me-2"></i>
+                        <strong>Bill Summary:</strong> {{ bill.get_bill_type_display }} - ${{ bill.amount }}
+                        (Balance Due: ${{ bill.get_balance }})
+                    </div>
+                    
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.insurance_provider.id_for_label }}" class="form-label">Insurance Provider <span class="text-danger">*</span></label>
+                            {{ form.insurance_provider }}
+                            {% if form.insurance_provider.errors %}
+                                <div class="text-danger small mt-1">{{ form.insurance_provider.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.policy_number.id_for_label }}" class="form-label">Policy Number <span class="text-danger">*</span></label>
+                            {{ form.policy_number }}
+                            {% if form.policy_number.errors %}
+                                <div class="text-danger small mt-1">{{ form.policy_number.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.claim_amount.id_for_label }}" class="form-label">Claim Amount <span class="text-danger">*</span></label>
+                            {{ form.claim_amount }}
+                            <div class="form-text small">Amount to be claimed from insurance (maximum: ${{ bill.get_balance }}).</div>
+                            {% if form.claim_amount.errors %}
+                                <div class="text-danger small mt-1">{{ form.claim_amount.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-4">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes }}
+                            <div class="form-text small">Any additional information for the insurance provider.</div>
+                            {% if form.notes.errors %}
+                                <div class="text-danger small mt-1">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="d-grid gap-2">
+                            <button type="submit" class="btn btn-primary btn-lg">
+                                <i class="fas fa-paper-plane me-2"></i>Submit Claim
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

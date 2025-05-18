@@ -1,0 +1,128 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Dispense Medicine | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Dispense Medicine</h1>
+        <a href="{% url 'pharmacy:dashboard' %}" class="btn btn-outline-primary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Dashboard
+        </a>
+    </div>
+
+    <div class="row">
+        <!-- Dispense Information -->
+        <div class="col-md-5 mb-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Dispense Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <span class="text-muted">Request ID:</span>
+                        <span class="fw-bold">#{{ dispense.id }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Patient:</span>
+                        <span class="fw-bold">{{ dispense.prescription.record.patient.user.get_full_name }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Medicine:</span>
+                        <span class="fw-bold">{{ dispense.medicine.name }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Quantity:</span>
+                        <span class="fw-bold">{{ dispense.quantity }}</span>
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Current Stock:</span>
+                        <span class="fw-bold {% if dispense.medicine.stock_quantity < dispense.quantity %}text-danger{% endif %}">
+                            {{ dispense.medicine.stock_quantity }}
+                        </span>
+                        {% if dispense.medicine.stock_quantity < dispense.quantity %}
+                            <div class="alert alert-danger mt-2">
+                                <i class="fas fa-exclamation-circle me-1"></i>
+                                <strong>Warning:</strong> Not enough stock to fulfill this request.
+                            </div>
+                        {% endif %}
+                    </div>
+                    <div class="mb-3">
+                        <span class="text-muted">Prescription:</span>
+                        <div class="mt-2 p-3 border rounded">
+                            <p class="mb-1">
+                                <strong>Medication:</strong> {{ dispense.prescription.medication_name }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Dosage:</strong> {{ dispense.prescription.dosage }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Frequency:</strong> {{ dispense.prescription.frequency }}
+                            </p>
+                            <p class="mb-1">
+                                <strong>Duration:</strong> {{ dispense.prescription.duration }}
+                            </p>
+                            {% if dispense.prescription.notes %}
+                                <p class="mb-0">
+                                    <strong>Notes:</strong> {{ dispense.prescription.notes }}
+                                </p>
+                            {% endif %}
+                        </div>
+                    </div>
+                    <div class="mb-0">
+                        <span class="text-muted">Requested At:</span>
+                        <span class="fw-bold">{{ dispense.requested_at|date:"F d, Y H:i" }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Dispense Form -->
+        <div class="col-md-7 mb-4">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Dispense Form</h5>
+                </div>
+                <div class="card-body">
+                    <form method="post">
+                        {% csrf_token %}
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.status.id_for_label }}" class="form-label">Status</label>
+                            {{ form.status }}
+                            {% if form.status.errors %}
+                                <div class="text-danger small">{{ form.status.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="mb-3">
+                            <label for="{{ form.notes.id_for_label }}" class="form-label">Notes</label>
+                            {{ form.notes }}
+                            {% if form.notes.errors %}
+                                <div class="text-danger small">{{ form.notes.errors }}</div>
+                            {% endif %}
+                        </div>
+                        
+                        <div class="alert alert-info">
+                            <i class="fas fa-info-circle me-2"></i>
+                            <strong>Important:</strong> 
+                            <ul class="mb-0 mt-2">
+                                <li>Selecting 'Dispensed' will automatically reduce the medicine stock by the requested quantity.</li>
+                                <li>Please ensure there's enough stock before dispensing.</li>
+                                <li>Select 'Cancelled' if you need to reject this request.</li>
+                            </ul>
+                        </div>
+                        
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary" {% if dispense.medicine.stock_quantity < dispense.quantity %}disabled{% endif %}>
+                                <i class="fas fa-prescription-bottle-alt me-1"></i> Process Request
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

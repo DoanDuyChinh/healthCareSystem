@@ -1,0 +1,218 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Lab Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Lab Dashboard</h1>
+        <div>
+            <span class="text-muted">Welcome, {{ user.get_full_name }}!</span>
+        </div>
+    </div>
+    
+    <div class="row dashboard-stats">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Pending Tests</div>
+                            <div class="text-value">{{ pending_tests.paginator.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-hourglass-half text-warning"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Sample Collected</div>
+                            <div class="text-value">{{ pending_tests.object_list|dictsort:'status'|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-vials text-primary"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Processing</div>
+                            <div class="text-value">{{ pending_tests.object_list|dictsort:'status'|length }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-flask text-info"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card">
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col">
+                            <div class="text-muted text-uppercase mb-1 text-label">Completed Tests</div>
+                            <div class="text-value">{{ completed_tests.paginator.count }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <ul class="nav nav-tabs mb-4" id="labTabs" role="tablist">
+        <li class="nav-item" role="presentation">
+            <button class="nav-link active" id="pending-tab" data-bs-toggle="tab" data-bs-target="#pending" type="button" role="tab" aria-controls="pending" aria-selected="true">
+                Pending Tests
+                {% if pending_tests %}
+                    <span class="badge bg-primary ms-2">{{ pending_tests.paginator.count }}</span>
+                {% endif %}
+            </button>
+        </li>
+        <li class="nav-item" role="presentation">
+            <button class="nav-link" id="completed-tab" data-bs-toggle="tab" data-bs-target="#completed" type="button" role="tab" aria-controls="completed" aria-selected="false">
+                Completed Tests
+                {% if completed_tests %}
+                    <span class="badge bg-success ms-2">{{ completed_tests.paginator.count }}</span>
+                {% endif %}
+            </button>
+        </li>
+    </ul>
+    
+    <div class="tab-content" id="labTabContent">
+        <div class="tab-pane fade show active" id="pending" role="tabpanel" aria-labelledby="pending-tab">
+            <div class="card shadow-sm">
+                {% if pending_tests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Test Type</th>
+                                    <th>Patient</th>
+                                    <th>Ordered By</th>
+                                    <th>Order Date</th>
+                                    <th>Status</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in pending_tests %}
+                                    <tr>
+                                        <td>{{ test.test_type }}</td>
+                                        <td>{{ test.patient.user.get_full_name }}</td>
+                                        <td>Dr. {{ test.doctor.user.get_full_name }}</td>
+                                        <td>{{ test.ordered_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            {% if test.status == 'ordered' %}
+                                                <span class="badge bg-warning">Ordered</span>
+                                            {% elif test.status == 'sample_collected' %}
+                                                <span class="badge bg-primary">Sample Collected</span>
+                                            {% elif test.status == 'processing' %}
+                                                <span class="badge bg-info">Processing</span>
+                                            {% endif %}
+                                        </td>
+                                        <td>
+                                            <a href="{% url 'lab:update_test' test.id %}" class="btn btn-sm btn-primary">
+                                                <i class="fas fa-edit me-1"></i> Update
+                                            </a>
+                                            <a href="{% url 'lab:test_detail' test.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if pending_tests.has_other_pages %}
+                        <div class="d-flex justify-content-center p-3">
+                            {% include "pagination.html" with page_obj=pending_tests page_query_param="&pending_page=" %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-check-circle text-muted fa-4x"></i>
+                        </div>
+                        <h5 class="text-muted">No pending tests</h5>
+                        <p class="text-muted">All tests have been completed or no tests have been ordered.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+        
+        <div class="tab-pane fade" id="completed" role="tabpanel" aria-labelledby="completed-tab">
+            <div class="card shadow-sm">
+                {% if completed_tests %}
+                    <div class="table-responsive">
+                        <table class="table table-hover mb-0">
+                            <thead class="table-light">
+                                <tr>
+                                    <th>Test Type</th>
+                                    <th>Patient</th>
+                                    <th>Ordered By</th>
+                                    <th>Completion Date</th>
+                                    <th>Actions</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for test in completed_tests %}
+                                    <tr>
+                                        <td>{{ test.test_type }}</td>
+                                        <td>{{ test.patient.user.get_full_name }}</td>
+                                        <td>Dr. {{ test.doctor.user.get_full_name }}</td>
+                                        <td>{{ test.completed_at|date:"M d, Y" }}</td>
+                                        <td>
+                                            <a href="{% url 'lab:test_detail' test.id %}" class="btn btn-sm btn-info">
+                                                <i class="fas fa-eye me-1"></i> View
+                                            </a>
+                                            {% if test.result_file %}
+                                                <a href="{{ test.result_file.url }}" class="btn btn-sm btn-success" download>
+                                                    <i class="fas fa-download me-1"></i> Download
+                                                </a>
+                                            {% endif %}
+                                        </td>
+                                    </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                    
+                    {% if completed_tests.has_other_pages %}
+                        <div class="d-flex justify-content-center p-3">
+                            {% include "pagination.html" with page_obj=completed_tests page_query_param="&completed_page=" %}
+                        </div>
+                    {% endif %}
+                {% else %}
+                    <div class="text-center py-5">
+                        <div class="mb-3">
+                            <i class="fas fa-vial text-muted fa-4x"></i>
+                        </div>
+                        <h5 class="text-muted">No completed tests</h5>
+                        <p class="text-muted">There are no completed tests in the system.</p>
+                    </div>
+                {% endif %}
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

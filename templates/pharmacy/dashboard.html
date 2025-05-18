@@ -1,0 +1,227 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Pharmacy Dashboard | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Pharmacy Dashboard</h1>
+        <div>
+            <a href="{% url 'pharmacy:add_medicine' %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> Add Medicine
+            </a>
+        </div>
+    </div>
+
+    <!-- Dashboard Stats -->
+    <div class="row dashboard-stats mb-4">
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-bg bg-primary-light me-3">
+                            <i class="fas fa-prescription text-primary"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Pending Dispensations</h6>
+                            <h2 class="mb-0">{{ pending_dispenses.count }}</h2>
+                        </div>
+                    </div>
+                    <a href="#pending-section" class="btn btn-sm btn-outline-primary">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-bg bg-warning-light me-3">
+                            <i class="fas fa-exclamation-triangle text-warning"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Low Stock Medicines</h6>
+                            <h2 class="mb-0">{{ low_stock_medicines.count }}</h2>
+                        </div>
+                    </div>
+                    <a href="{% url 'pharmacy:medicine_list' %}?low_stock=true" class="btn btn-sm btn-outline-warning">View All</a>
+                </div>
+            </div>
+        </div>
+        <div class="col-md-4">
+            <div class="card shadow-sm h-100">
+                <div class="card-body">
+                    <div class="d-flex align-items-center mb-2">
+                        <div class="icon-bg bg-success-light me-3">
+                            <i class="fas fa-check-circle text-success"></i>
+                        </div>
+                        <div>
+                            <h6 class="mb-0">Recently Dispensed</h6>
+                            <h2 class="mb-0">{{ recent_dispenses.count }}</h2>
+                        </div>
+                    </div>
+                    <a href="#recent-section" class="btn btn-sm btn-outline-success">View All</a>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Pending Dispensations -->
+    <div class="card shadow-sm mb-4" id="pending-section">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Pending Dispensations</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Medicine</th>
+                            <th>Quantity</th>
+                            <th>Doctor</th>
+                            <th>Requested</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dispense in pending_dispenses %}
+                            <tr>
+                                <td>{{ dispense.id }}</td>
+                                <td>{{ dispense.prescription.record.patient.user.get_full_name }}</td>
+                                <td>{{ dispense.medicine.name }}</td>
+                                <td>{{ dispense.quantity }}</td>
+                                <td>Dr. {{ dispense.prescription.record.doctor.user.get_full_name }}</td>
+                                <td>{{ dispense.requested_at|date:"M d, Y" }}</td>
+                                <td>
+                                    <a href="{% url 'pharmacy:dispense_medicine' dispense.id %}" class="btn btn-sm btn-primary">
+                                        <i class="fas fa-prescription-bottle-alt me-1"></i> Dispense
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="7" class="text-center py-4">
+                                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                                    <p class="mb-0">No pending dispensations. All caught up!</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Low Stock Medicines -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+            <h5 class="card-title mb-0">Low Stock Medicines</h5>
+            <a href="{% url 'pharmacy:medicine_list' %}?low_stock=true" class="btn btn-sm btn-outline-secondary">View All</a>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>Medicine</th>
+                            <th>Current Stock</th>
+                            <th>Unit Price</th>
+                            <th>Action</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for medicine in low_stock_medicines|slice:":5" %}
+                            <tr>
+                                <td>{{ medicine.name }}</td>
+                                <td>
+                                    <span class="badge bg-danger">{{ medicine.stock_quantity }}</span>
+                                </td>
+                                <td>${{ medicine.unit_price }}</td>
+                                <td>
+                                    <a href="{% url 'pharmacy:edit_medicine' medicine.id %}" class="btn btn-sm btn-warning">
+                                        <i class="fas fa-plus-circle me-1"></i> Update Stock
+                                    </a>
+                                </td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="4" class="text-center py-4">
+                                    <i class="fas fa-check-circle text-success fa-3x mb-3"></i>
+                                    <p class="mb-0">No medicines with low stock!</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+    <!-- Recent Dispensations -->
+    <div class="card shadow-sm" id="recent-section">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Recently Dispensed Medicines</h5>
+        </div>
+        <div class="card-body p-0">
+            <div class="table-responsive">
+                <table class="table table-hover">
+                    <thead class="table-light">
+                        <tr>
+                            <th>ID</th>
+                            <th>Patient</th>
+                            <th>Medicine</th>
+                            <th>Quantity</th>
+                            <th>Dispensed By</th>
+                            <th>Dispensed At</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        {% for dispense in recent_dispenses %}
+                            <tr>
+                                <td>{{ dispense.id }}</td>
+                                <td>{{ dispense.prescription.record.patient.user.get_full_name }}</td>
+                                <td>{{ dispense.medicine.name }}</td>
+                                <td>{{ dispense.quantity }}</td>
+                                <td>{{ dispense.pharmacist.get_full_name }}</td>
+                                <td>{{ dispense.dispensed_at|date:"M d, Y H:i" }}</td>
+                            </tr>
+                        {% empty %}
+                            <tr>
+                                <td colspan="6" class="text-center py-4">
+                                    <i class="fas fa-prescription-bottle text-muted fa-3x mb-3"></i>
+                                    <p class="mb-0">No medicines have been dispensed yet.</p>
+                                </td>
+                            </tr>
+                        {% endfor %}
+                    </tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+</div>
+
+<style>
+    .icon-bg {
+        width: 50px;
+        height: 50px;
+        border-radius: 50%;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+    }
+    .icon-bg i {
+        font-size: 1.5rem;
+    }
+    .bg-primary-light {
+        background-color: rgba(52, 152, 219, 0.2);
+    }
+    .bg-warning-light {
+        background-color: rgba(243, 156, 18, 0.2);
+    }
+    .bg-success-light {
+        background-color: rgba(46, 204, 113, 0.2);
+    }
+</style>
+{% endblock %}

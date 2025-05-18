@@ -1,0 +1,318 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Patient Detail | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Patient Details</h1>
+        <div>
+            <a href="{% url 'doctors:create_record' patient.id %}" class="btn btn-primary">
+                <i class="fas fa-plus-circle me-1"></i> Create Medical Record
+            </a>
+            <a href="{% url 'lab:order_test' patient.id %}" class="btn btn-info ms-2">
+                <i class="fas fa-vial me-1"></i> Order Lab Test
+            </a>
+            <a href="{% url 'doctors:patient_list' %}" class="btn btn-outline-secondary ms-2">
+                <i class="fas fa-arrow-left me-1"></i> Back to Patient List
+            </a>
+        </div>
+    </div>
+    
+    <div class="row">
+        <!-- Patient Information Card -->
+        <div class="col-md-4 mb-4">
+            <div class="card">
+                <div class="card-body text-center">
+                    {% if patient.user.profile_picture %}
+                        <img src="{{ patient.user.profile_picture.url }}" class="profile-img mb-3">
+                    {% else %}
+                        <div class="profile-img d-flex align-items-center justify-content-center bg-primary mb-3 mx-auto">
+                            <span class="text-white" style="font-size: 50px;">{{ patient.user.first_name|first }}{{ patient.user.last_name|first }}</span>
+                        </div>
+                    {% endif %}
+                    
+                    <h3 class="mb-0">{{ patient.user.get_full_name }}</h3>
+                    <p class="text-muted">Patient ID: {{ patient.id }}</p>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-primary text-white">
+                    <h5 class="mb-0"><i class="fas fa-info-circle me-2"></i>Basic Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Age</div>
+                        <div class="col-sm-7">{{ patient.get_age }} years</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Gender</div>
+                        <div class="col-sm-7">{{ patient.get_gender_display }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Blood Type</div>
+                        <div class="col-sm-7">{{ patient.blood_type|default:"Not specified" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Height</div>
+                        <div class="col-sm-7">{% if patient.height %}{{ patient.height }} cm{% else %}Not specified{% endif %}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Weight</div>
+                        <div class="col-sm-7">{% if patient.weight %}{{ patient.weight }} kg{% else %}Not specified{% endif %}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Phone</div>
+                        <div class="col-sm-7">{{ patient.user.phone_number|default:"Not provided" }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Email</div>
+                        <div class="col-sm-7">{{ patient.user.email }}</div>
+                    </div>
+                    <div class="row mb-2">
+                        <div class="col-sm-5 fw-bold">Address</div>
+                        <div class="col-sm-7">{{ patient.user.address|default:"Not provided" }}</div>
+                    </div>
+                </div>
+            </div>
+            
+            <div class="card mt-4">
+                <div class="card-header bg-info text-white">
+                    <h5 class="mb-0"><i class="fas fa-notes-medical me-2"></i>Medical Information</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Allergies</h6>
+                        <p>{{ patient.allergies|default:"No known allergies"|linebreaks }}</p>
+                    </div>
+                    <div class="mb-3">
+                        <h6 class="fw-bold">Chronic Diseases</h6>
+                        <p>{{ patient.chronic_diseases|default:"No chronic diseases reported"|linebreaks }}</p>
+                    </div>
+                    <div class="mb-0">
+                        <h6 class="fw-bold">Emergency Contact</h6>
+                        <p class="mb-0">{{ patient.emergency_contact_name|default:"Not provided" }}</p>
+                        <p>{{ patient.emergency_contact_phone|default:"No phone number provided" }}</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-8">
+            <!-- Nav tabs for different sections -->
+            <ul class="nav nav-tabs" id="patientTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="records-tab" data-bs-toggle="tab" data-bs-target="#records" type="button" role="tab" aria-controls="records" aria-selected="true">
+                        <i class="fas fa-file-medical me-1"></i> Medical Records
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">
+                        <i class="fas fa-calendar-check me-1"></i> Appointments
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="lab-tests-tab" data-bs-toggle="tab" data-bs-target="#lab-tests" type="button" role="tab" aria-controls="lab-tests" aria-selected="false">
+                        <i class="fas fa-vial me-1"></i> Lab Tests
+                    </button>
+                </li>
+            </ul>
+            
+            <!-- Tab content -->
+            <div class="tab-content mt-3" id="patientTabsContent">
+                <!-- Medical Records Tab -->
+                <div class="tab-pane fade show active" id="records" role="tabpanel" aria-labelledby="records-tab">
+                    <div class="card">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-file-medical me-2"></i>Medical Records</h5>
+                                <a href="{% url 'doctors:create_record' patient.id %}" class="btn btn-sm btn-primary">
+                                    <i class="fas fa-plus me-2"></i>Add New Record
+                                </a>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if medical_records %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date</th>
+                                                <th>Diagnosis</th>
+                                                <th>Treatment Plan</th>
+                                                <th>Follow-up</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for record in medical_records %}
+                                                <tr>
+                                                    <td>{{ record.date|date:"M d, Y" }}</td>
+                                                    <td>{{ record.diagnosis|truncatechars:30 }}</td>
+                                                    <td>{{ record.treatment_plan|truncatechars:30 }}</td>
+                                                    <td>
+                                                        {% if record.follow_up_date %}
+                                                            {{ record.follow_up_date|date:"M d, Y" }}
+                                                        {% else %}
+                                                            None scheduled
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'doctors:record_detail' record.id %}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-eye"></i>
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-folder-open text-muted fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No medical records yet</h6>
+                                    <a href="{% url 'doctors:create_record' patient.id %}" class="btn btn-sm btn-primary mt-2">Create First Record</a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Appointments Tab -->
+                <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+                    <div class="card mb-4">
+                        <div class="card-header">
+                            <div class="d-flex justify-content-between align-items-center">
+                                <h5 class="mb-0"><i class="fas fa-calendar-alt me-2"></i>Appointments</h5>
+                            </div>
+                        </div>
+                        <div class="card-body p-0">
+                            {% if appointments %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover mb-0">
+                                        <thead class="table-light">
+                                            <tr>
+                                                <th>Date & Time</th>
+                                                <th>Reason</th>
+                                                <th>Status</th>
+                                                <th>Actions</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for appointment in appointments %}
+                                                <tr>
+                                                    <td>{{ appointment.date|date:"M d, Y" }} at {{ appointment.date|date:"h:i A" }}</td>
+                                                    <td>{{ appointment.reason|truncatechars:40 }}</td>
+                                                    <td>
+                                                        {% if appointment.status == 'pending' %}
+                                                            <span class="badge bg-warning">Pending</span>
+                                                        {% elif appointment.status == 'approved' %}
+                                                            <span class="badge bg-success">Approved</span>
+                                                        {% elif appointment.status == 'completed' %}
+                                                            <span class="badge bg-info">Completed</span>
+                                                        {% elif appointment.status == 'cancelled' %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'appointments:update_status' appointment.id %}" class="btn btn-sm btn-outline-primary">
+                                                            <i class="fas fa-edit me-1"></i>Update
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center py-4">
+                                    <div class="mb-3">
+                                        <i class="fas fa-calendar-times text-muted fa-3x"></i>
+                                    </div>
+                                    <h6 class="text-muted">No appointments found</h6>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+                
+                <!-- Lab Tests Tab -->
+                <div class="tab-pane fade" id="lab-tests" role="tabpanel" aria-labelledby="lab-tests-tab">
+                    <div class="card">
+                        <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                            <h5 class="card-title mb-0">Lab Tests</h5>
+                            <a href="{% url 'lab:order_test' patient.id %}" class="btn btn-sm btn-primary">
+                                <i class="fas fa-plus-circle me-1"></i> Order New Test
+                            </a>
+                        </div>
+                        <div class="card-body">
+                            {% if lab_tests %}
+                                <div class="table-responsive">
+                                    <table class="table table-hover">
+                                        <thead>
+                                            <tr>
+                                                <th>Test Type</th>
+                                                <th>Ordered Date</th>
+                                                <th>Status</th>
+                                                <th>Results</th>
+                                                <th>Action</th>
+                                            </tr>
+                                        </thead>
+                                        <tbody>
+                                            {% for test in lab_tests %}
+                                                <tr>
+                                                    <td>{{ test.test_type }}</td>
+                                                    <td>{{ test.ordered_at|date:"M d, Y" }}</td>
+                                                    <td>
+                                                        {% if test.status == 'ordered' %}
+                                                            <span class="badge bg-warning">Ordered</span>
+                                                        {% elif test.status == 'sample_collected' %}
+                                                            <span class="badge bg-info">Sample Collected</span>
+                                                        {% elif test.status == 'processing' %}
+                                                            <span class="badge bg-primary">Processing</span>
+                                                        {% elif test.status == 'completed' %}
+                                                            <span class="badge bg-success">Completed</span>
+                                                        {% elif test.status == 'cancelled' %}
+                                                            <span class="badge bg-danger">Cancelled</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        {% if test.status == 'completed' %}
+                                                            <a href="{% url 'lab:test_detail' test.id %}" class="btn btn-sm btn-outline-primary">
+                                                                <i class="fas fa-eye me-1"></i> View Results
+                                                            </a>
+                                                        {% else %}
+                                                            <span class="text-muted">Pending</span>
+                                                        {% endif %}
+                                                    </td>
+                                                    <td>
+                                                        <a href="{% url 'lab:test_detail' test.id %}" class="btn btn-sm btn-outline-info">
+                                                            <i class="fas fa-info-circle me-1"></i> Details
+                                                        </a>
+                                                    </td>
+                                                </tr>
+                                            {% endfor %}
+                                        </tbody>
+                                    </table>
+                                </div>
+                            {% else %}
+                                <div class="text-center p-3">
+                                    <i class="fas fa-vial text-muted fa-3x mb-3"></i>
+                                    <p class="mb-0">No lab tests ordered for this patient yet.</p>
+                                    <a href="{% url 'lab:order_test' patient.id %}" class="btn btn-primary mt-3">
+                                        <i class="fas fa-plus-circle me-1"></i> Order New Test
+                                    </a>
+                                </div>
+                            {% endif %}
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

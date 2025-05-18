@@ -1,0 +1,313 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}System Settings | Healthcare System{% endblock %}
+
+{% block content %}
+<div class="container-fluid">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">System Settings</h1>
+    </div>
+
+    <!-- Settings Tabs -->
+    <div class="card shadow-sm mb-4">
+        <div class="card-body p-0">
+            <ul class="nav nav-tabs" id="settingsTabs" role="tablist">
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link active" id="general-tab" data-bs-toggle="tab" data-bs-target="#general" type="button" role="tab" aria-controls="general" aria-selected="true">
+                        <i class="fas fa-cog me-1"></i> General
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="email-tab" data-bs-toggle="tab" data-bs-target="#email" type="button" role="tab" aria-controls="email" aria-selected="false">
+                        <i class="fas fa-envelope me-1"></i> Email
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="security-tab" data-bs-toggle="tab" data-bs-target="#security" type="button" role="tab" aria-controls="security" aria-selected="false">
+                        <i class="fas fa-shield-alt me-1"></i> Security
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="appointments-tab" data-bs-toggle="tab" data-bs-target="#appointments" type="button" role="tab" aria-controls="appointments" aria-selected="false">
+                        <i class="fas fa-calendar-alt me-1"></i> Appointments
+                    </button>
+                </li>
+                <li class="nav-item" role="presentation">
+                    <button class="nav-link" id="backup-tab" data-bs-toggle="tab" data-bs-target="#backup" type="button" role="tab" aria-controls="backup" aria-selected="false">
+                        <i class="fas fa-database me-1"></i> Backup
+                    </button>
+                </li>
+            </ul>
+        </div>
+    </div>
+
+    <!-- Tab content -->
+    <div class="tab-content" id="settingsTabsContent">
+        <!-- General Settings -->
+        <div class="tab-pane fade show active" id="general" role="tabpanel" aria-labelledby="general-tab">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">General Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="siteName" class="form-label">Site Name</label>
+                            <input type="text" class="form-control" id="siteName" value="Healthcare Management System">
+                            <div class="form-text">The name of your healthcare facility or organization</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="siteDescription" class="form-label">Site Description</label>
+                            <textarea class="form-control" id="siteDescription" rows="3">A comprehensive healthcare management system for patients, doctors, and administrators.</textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label for="timezone" class="form-label">Timezone</label>
+                            <select class="form-select" id="timezone">
+                                <option value="UTC" selected>UTC</option>
+                                <option value="America/New_York">Eastern Time (US & Canada)</option>
+                                <option value="America/Chicago">Central Time (US & Canada)</option>
+                                <option value="America/Denver">Mountain Time (US & Canada)</option>
+                                <option value="America/Los_Angeles">Pacific Time (US & Canada)</option>
+                                <option value="Asia/Tokyo">Japan</option>
+                                <option value="Europe/London">London</option>
+                                <option value="Europe/Paris">Paris</option>
+                            </select>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Email Settings -->
+        <div class="tab-pane fade" id="email" role="tabpanel" aria-labelledby="email-tab">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Email Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="smtpServer" class="form-label">SMTP Server</label>
+                            <input type="text" class="form-control" id="smtpServer" value="smtp.example.com">
+                        </div>
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="smtpPort" class="form-label">SMTP Port</label>
+                                <input type="number" class="form-control" id="smtpPort" value="587">
+                            </div>
+                            <div class="col-md-6">
+                                <label for="smtpEncryption" class="form-label">Encryption</label>
+                                <select class="form-select" id="smtpEncryption">
+                                    <option value="tls" selected>TLS</option>
+                                    <option value="ssl">SSL</option>
+                                    <option value="none">None</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpUsername" class="form-label">SMTP Username</label>
+                            <input type="text" class="form-control" id="smtpUsername" value="notifications@example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="smtpPassword" class="form-label">SMTP Password</label>
+                            <input type="password" class="form-control" id="smtpPassword" value="••••••••">
+                        </div>
+                        <div class="mb-3">
+                            <label for="senderEmail" class="form-label">Sender Email</label>
+                            <input type="email" class="form-control" id="senderEmail" value="no-reply@healthcare.example.com">
+                        </div>
+                        <div class="mb-3">
+                            <label for="senderName" class="form-label">Sender Name</label>
+                            <input type="text" class="form-control" id="senderName" value="Healthcare System">
+                        </div>
+                        <div class="mb-3">
+                            <button type="button" class="btn btn-outline-secondary">
+                                <i class="fas fa-paper-plane me-1"></i> Send Test Email
+                            </button>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Security Settings -->
+        <div class="tab-pane fade" id="security" role="tabpanel" aria-labelledby="security-tab">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Security Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enforcePasswordPolicy" checked>
+                                <label class="form-check-label" for="enforcePasswordPolicy">Enforce Strong Password Policy</label>
+                            </div>
+                            <div class="form-text">Require passwords to contain at least 8 characters with a mix of letters, numbers, and symbols</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableTwoFactor">
+                                <label class="form-check-label" for="enableTwoFactor">Enable Two-Factor Authentication</label>
+                            </div>
+                            <div class="form-text">Require users to verify their identity using a second method</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableSsl" checked>
+                                <label class="form-check-label" for="enableSsl">Force SSL/HTTPS</label>
+                            </div>
+                            <div class="form-text">Redirect all HTTP traffic to HTTPS</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="sessionTimeout" class="form-label">Session Timeout (minutes)</label>
+                            <input type="number" class="form-control" id="sessionTimeout" value="60">
+                            <div class="form-text">Time of inactivity before a user is logged out automatically</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="loginAttempts" class="form-label">Maximum Login Attempts</label>
+                            <input type="number" class="form-control" id="loginAttempts" value="5">
+                            <div class="form-text">Number of failed login attempts before account is temporarily locked</div>
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Appointment Settings -->
+        <div class="tab-pane fade" id="appointments" role="tabpanel" aria-labelledby="appointments-tab">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Appointment Settings</h5>
+                </div>
+                <div class="card-body">
+                    <form>
+                        <div class="mb-3">
+                            <label for="appointmentDuration" class="form-label">Default Appointment Duration (minutes)</label>
+                            <input type="number" class="form-control" id="appointmentDuration" value="30">
+                        </div>
+                        <div class="mb-3">
+                            <label for="schedulingWindow" class="form-label">Scheduling Window (days)</label>
+                            <input type="number" class="form-control" id="schedulingWindow" value="60">
+                            <div class="form-text">Number of days in advance that appointments can be booked</div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="minAdvanceTime" class="form-label">Minimum Advance Notice (hours)</label>
+                            <input type="number" class="form-control" id="minAdvanceTime" value="24">
+                            <div class="form-text">Minimum hours before an appointment can be booked</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="requireApproval" checked>
+                                <label class="form-check-label" for="requireApproval">Require Doctor Approval</label>
+                            </div>
+                            <div class="form-text">Appointments require doctor approval before being confirmed</div>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check form-switch">
+                                <input class="form-check-input" type="checkbox" id="enableReminders" checked>
+                                <label class="form-check-label" for="enableReminders">Enable Appointment Reminders</label>
+                            </div>
+                        </div>
+                        <div class="mb-3">
+                            <label for="reminderTime" class="form-label">Send Reminders (hours before appointment)</label>
+                            <input type="number" class="form-control" id="reminderTime" value="24">
+                        </div>
+                        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-save me-1"></i> Save Settings
+                            </button>
+                        </div>
+                    </form>
+                </div>
+            </div>
+        </div>
+        
+        <!-- Backup & Maintenance -->
+        <div class="tab-pane fade" id="backup" role="tabpanel" aria-labelledby="backup-tab">
+            <div class="card shadow-sm">
+                <div class="card-header bg-white">
+                    <h5 class="card-title mb-0">Backup & Maintenance</h5>
+                </div>
+                <div class="card-body">
+                    <div class="mb-4">
+                        <h6>Database Backup</h6>
+                        <p>Create a backup of the entire database.</p>
+                        <button type="button" class="btn btn-primary">
+                            <i class="fas fa-download me-1"></i> Create Backup
+                        </button>
+                    </div>
+                    <hr>
+                    <div class="mb-4">
+                        <h6>Scheduled Backups</h6>
+                        <div class="form-check form-switch mb-3">
+                            <input class="form-check-input" type="checkbox" id="enableAutoBackup" checked>
+                            <label class="form-check-label" for="enableAutoBackup">Enable Automatic Backups</label>
+                        </div>
+                        <div class="mb-3">
+                            <label for="backupFrequency" class="form-label">Backup Frequency</label>
+                            <select class="form-select" id="backupFrequency">
+                                <option value="daily" selected>Daily</option>
+                                <option value="weekly">Weekly</option>
+                                <option value="monthly">Monthly</option>
+                            </select>
+                        </div>
+                        <div class="mb-3">
+                            <label for="backupTime" class="form-label">Backup Time</label>
+                            <input type="time" class="form-control" id="backupTime" value="02:00">
+                        </div>
+                        <div class="mb-3">
+                            <label for="backupRetention" class="form-label">Retain Backups For (days)</label>
+                            <input type="number" class="form-control" id="backupRetention" value="30">
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-4">
+                        <h6>System Maintenance</h6>
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="button" class="btn btn-warning me-2">
+                                <i class="fas fa-broom me-1"></i> Clear Cache
+                            </button>
+                            <button type="button" class="btn btn-danger me-2">
+                                <i class="fas fa-trash-alt me-1"></i> Clear Expired Sessions
+                            </button>
+                            <button type="button" class="btn btn-secondary">
+                                <i class="fas fa-wrench me-1"></i> Run Diagnostics
+                            </button>
+                        </div>
+                    </div>
+                    <hr>
+                    <div class="mb-4">
+                        <h6>Import/Export</h6>
+                        <p>Import or export system data.</p>
+                        <div class="d-grid gap-2 d-md-block">
+                            <button type="button" class="btn btn-outline-primary me-2">
+                                <i class="fas fa-file-export me-1"></i> Export Data
+                            </button>
+                            <button type="button" class="btn btn-outline-secondary">
+                                <i class="fas fa-file-import me-1"></i> Import Data
+                            </button>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}

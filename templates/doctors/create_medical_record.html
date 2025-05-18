@@ -1,0 +1,298 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}Create Medical Record | Healthcare System{% endblock %}
+
+{% block extra_css %}
+<style>
+    .formset-row {
+        border: 1px solid #e9ecef;
+        border-radius: 8px;
+        padding: 15px;
+        margin-bottom: 15px;
+        background-color: #f8f9fa;
+    }
+    
+    .delete-row {
+        cursor: pointer;
+        color: #dc3545;
+    }
+    
+    #add-prescription {
+        margin-bottom: 20px;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container py-4">
+    <div class="d-flex justify-content-between align-items-center mb-4">
+        <h1 class="h3">Create Medical Record</h1>
+        <a href="{% url 'doctors:patient_detail' patient.id %}" class="btn btn-outline-secondary">
+            <i class="fas fa-arrow-left me-1"></i> Back to Patient
+        </a>
+    </div>
+    
+    <div class="card shadow-sm mb-4">
+        <div class="card-header bg-white">
+            <h5 class="card-title mb-0">Patient Information</h5>
+        </div>
+        <div class="card-body">
+            <div class="row">
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Name:</strong> {{ patient.user.get_full_name }}</p>
+                    <p class="mb-1"><strong>Age:</strong> {{ patient.get_age }} years old</p>
+                    <p class="mb-1"><strong>Gender:</strong> {{ patient.get_gender_display }}</p>
+                </div>
+                <div class="col-md-6">
+                    <p class="mb-1"><strong>Blood Type:</strong> {{ patient.blood_type|default:"Not specified" }}</p>
+                    <p class="mb-1"><strong>Allergies:</strong> {{ patient.allergies|default:"None" }}</p>
+                    <p class="mb-1"><strong>Chronic Diseases:</strong> {{ patient.chronic_diseases|default:"None" }}</p>
+                </div>
+            </div>
+        </div>
+    </div>
+    
+    <form method="post" id="medical-record-form">
+        {% csrf_token %}
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white">
+                <h5 class="card-title mb-0">Medical Record</h5>
+            </div>
+            <div class="card-body">
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.symptoms.id_for_label }}" class="form-label">Symptoms</label>
+                        {{ form.symptoms }}
+                        {% if form.symptoms.errors %}
+                            <div class="text-danger small">{{ form.symptoms.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.diagnosis.id_for_label }}" class="form-label">Diagnosis</label>
+                        {{ form.diagnosis }}
+                        {% if form.diagnosis.errors %}
+                            <div class="text-danger small">{{ form.diagnosis.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.treatment_plan.id_for_label }}" class="form-label">Treatment Plan</label>
+                        {{ form.treatment_plan }}
+                        {% if form.treatment_plan.errors %}
+                            <div class="text-danger small">{{ form.treatment_plan.errors }}</div>
+                        {% endif %}
+                    </div>
+                    <div class="col-md-6 mb-3">
+                        <label for="{{ form.follow_up_date.id_for_label }}" class="form-label">Follow-up Date</label>
+                        {{ form.follow_up_date }}
+                        {% if form.follow_up_date.errors %}
+                            <div class="text-danger small">{{ form.follow_up_date.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+                <div class="row">
+                    <div class="col-12 mb-3">
+                        <label for="{{ form.notes.id_for_label }}" class="form-label">Additional Notes</label>
+                        {{ form.notes }}
+                        {% if form.notes.errors %}
+                            <div class="text-danger small">{{ form.notes.errors }}</div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="card shadow-sm mb-4">
+            <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                <h5 class="card-title mb-0">Prescriptions</h5>
+                <button type="button" id="add-prescription" class="btn btn-sm btn-outline-success">
+                    <i class="fas fa-plus-circle me-1"></i> Add Another Prescription
+                </button>
+            </div>
+            <div class="card-body">
+                {{ formset.management_form }}
+                <div id="prescription-formset">
+                    {% for prescription_form in formset %}
+                        <div class="formset-row" data-form-index="{{ forloop.counter0 }}">
+                            {% if prescription_form.non_field_errors %}
+                                <div class="alert alert-danger">
+                                    {{ prescription_form.non_field_errors }}
+                                </div>
+                            {% endif %}
+                            
+                            {% for hidden in prescription_form.hidden_fields %}
+                                {{ hidden }}
+                            {% endfor %}
+                            
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ prescription_form.medication_name.id_for_label }}" class="form-label">Medication Name</label>
+                                    {{ prescription_form.medication_name }}
+                                    {% if prescription_form.medication_name.errors %}
+                                        <div class="text-danger small">{{ prescription_form.medication_name.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ prescription_form.dosage.id_for_label }}" class="form-label">Dosage</label>
+                                    {{ prescription_form.dosage }}
+                                    {% if prescription_form.dosage.errors %}
+                                        <div class="text-danger small">{{ prescription_form.dosage.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ prescription_form.frequency.id_for_label }}" class="form-label">Frequency</label>
+                                    {{ prescription_form.frequency }}
+                                    {% if prescription_form.frequency.errors %}
+                                        <div class="text-danger small">{{ prescription_form.frequency.errors }}</div>
+                                    {% endif %}
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <label for="{{ prescription_form.duration.id_for_label }}" class="form-label">Duration</label>
+                                    {{ prescription_form.duration }}
+                                    {% if prescription_form.duration.errors %}
+                                        <div class="text-danger small">{{ prescription_form.duration.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            <div class="row">
+                                <div class="col-12 mb-3">
+                                    <label for="{{ prescription_form.notes.id_for_label }}" class="form-label">Notes</label>
+                                    {{ prescription_form.notes }}
+                                    {% if prescription_form.notes.errors %}
+                                        <div class="text-danger small">{{ prescription_form.notes.errors }}</div>
+                                    {% endif %}
+                                </div>
+                            </div>
+                            
+                            {% if not forloop.first %}
+                            <div class="text-end">
+                                <a href="#" class="delete-row text-danger">
+                                    <i class="fas fa-trash-alt me-1"></i> Remove this prescription
+                                </a>
+                            </div>
+                            {% endif %}
+                        </div>
+                    {% endfor %}
+                </div>
+            </div>
+        </div>
+        
+        <div class="d-grid gap-2 d-md-flex justify-content-md-end">
+            <button type="submit" class="btn btn-primary">
+                <i class="fas fa-save me-1"></i> Save Medical Record
+            </button>
+        </div>
+    </form>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const addButton = document.getElementById('add-prescription');
+        const formsetContainer = document.getElementById('prescription-formset');
+        const totalFormsInput = document.getElementById('id_prescription_set-TOTAL_FORMS');
+        
+        if (!addButton || !formsetContainer || !totalFormsInput) {
+            console.error('Required elements not found');
+            return;
+        }
+        
+        // Function to get the current number of forms
+        const getTotalForms = () => parseInt(totalFormsInput.value);
+        
+        // Function to update form index
+        const updateElementIndex = (el, index) => {
+            // Update for attribute in labels
+            el.querySelectorAll('label').forEach(label => {
+                if (label.getAttribute('for')) {
+                    const newFor = label.getAttribute('for').replace(/\d+/, index);
+                    label.setAttribute('for', newFor);
+                }
+            });
+            
+            // Update id and name attributes in inputs
+            el.querySelectorAll('input, select, textarea').forEach(input => {
+                if (input.id) {
+                    const newId = input.id.replace(/\d+/, index);
+                    input.id = newId;
+                }
+                if (input.name) {
+                    const newName = input.name.replace(/\d+/, index);
+                    input.name = newName;
+                }
+            });
+            
+            // Update data attribute
+            el.setAttribute('data-form-index', index);
+        };
+        
+        // Add a new form row
+        addButton.addEventListener('click', function(e) {
+            e.preventDefault();
+            
+            const totalForms = getTotalForms();
+            
+            // Clone the first form row
+            const templateRow = formsetContainer.querySelector('.formset-row');
+            const newRow = templateRow.cloneNode(true);
+            
+            // Clear values in the new row
+            newRow.querySelectorAll('input, textarea').forEach(input => {
+                if (input.type !== 'hidden' || (!input.name.includes('id') && !input.name.includes('DELETE'))) {
+                    input.value = '';
+                }
+            });
+            
+            // Update form index
+            updateElementIndex(newRow, totalForms);
+            
+            // Add delete button if not already there
+            if (!newRow.querySelector('.delete-row')) {
+                const deleteLink = document.createElement('div');
+                deleteLink.className = 'text-end';
+                deleteLink.innerHTML = '<a href="#" class="delete-row text-danger"><i class="fas fa-trash-alt me-1"></i> Remove this prescription</a>';
+                newRow.appendChild(deleteLink);
+            }
+            
+            // Add the new row to the DOM
+            formsetContainer.appendChild(newRow);
+            
+            // Update total forms count
+            totalFormsInput.value = totalForms + 1;
+            
+            // Add event listener to delete button
+            addDeleteHandlers();
+        });
+        
+        // Function to handle row deletion
+        const addDeleteHandlers = () => {
+            document.querySelectorAll('.delete-row').forEach(deleteBtn => {
+                deleteBtn.addEventListener('click', function(e) {
+                    e.preventDefault();
+                    
+                    const formRow = this.closest('.formset-row');
+                    formRow.remove();
+                    
+                    // Re-index all rows
+                    const rows = formsetContainer.querySelectorAll('.formset-row');
+                    rows.forEach((row, index) => {
+                        updateElementIndex(row, index);
+                    });
+                    
+                    // Update total forms count
+                    totalFormsInput.value = rows.length;
+                });
+            });
+        };
+        
+        // Initialize delete handlers
+        addDeleteHandlers();
+    });
+</script>
+{% endblock %}
