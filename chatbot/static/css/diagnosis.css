@@ -1,0 +1,170 @@
+/* AI Diagnosis Button */
+.ai-diagnosis-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    background-color: #2e7d32;
+    color: white;
+    border: none;
+    border-radius: 20px;
+    padding: 8px 16px;
+    margin-bottom: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    font-weight: bold;
+    transition: all 0.2s ease;
+    box-shadow: 0 2px 5px rgba(0, 0, 0, 0.2);
+}
+
+.ai-diagnosis-btn:hover {
+    background-color: #1b5e20;
+    transform: translateY(-2px);
+    box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+}
+
+.ai-diagnosis-btn i {
+    margin-right: 8px;
+    font-size: 16px;
+}
+
+/* Chat input container with actions */
+.chat-input-container {
+  display: flex;
+  flex-direction: column;
+  padding: 10px;
+  background-color: #f8f9fa;
+  border-top: 1px solid #e0e0e0;
+}
+
+.chat-actions {
+  display: flex;
+  margin-bottom: 10px;
+}
+
+/* Make sure chat form styles don't interfere */
+#chat-form {
+  display: flex;
+  width: 100%;
+}
+
+#message-input {
+  flex-grow: 1;
+  padding: 10px 15px;
+  border: 1px solid #ced4da;
+  border-radius: 20px 0 0 20px;
+  outline: none;
+}
+
+#send-button {
+  background-color: #0d6efd;
+  color: white;
+  border: none;
+  border-radius: 0 20px 20px 0;
+  padding: 0 15px;
+  cursor: pointer;
+}
+
+/* Diagnosis Modal */
+.diagnosis-modal-backdrop {
+  position: fixed;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  background-color: rgba(0, 0, 0, 0.5);
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  z-index: 1000;
+}
+
+.diagnosis-modal {
+  background-color: white;
+  border-radius: 8px;
+  width: 90%;
+  max-width: 500px;
+  max-height: 80vh;
+  display: flex;
+  flex-direction: column;
+  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.15);
+}
+
+.diagnosis-modal-header {
+  padding: 15px 20px;
+  border-bottom: 1px solid #eaeaea;
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.diagnosis-modal-header h3 {
+  margin: 0;
+  color: #2e7d32;
+  font-weight: 600;
+}
+
+.close-btn {
+  background: none;
+  border: none;
+  font-size: 24px;
+  cursor: pointer;
+  color: #666;
+}
+
+.diagnosis-modal-body {
+  padding: 20px;
+  overflow-y: auto;
+  flex-grow: 1;
+}
+
+.diagnosis-modal-body p {
+  margin-top: 0;
+  margin-bottom: 15px;
+  color: #555;
+}
+
+.symptoms-container {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(200px, 1fr));
+  gap: 10px;
+  max-height: 300px;
+  overflow-y: auto;
+  padding-right: 10px;
+}
+
+.symptom-checkbox-container {
+  display: flex;
+  align-items: center;
+  margin-bottom: 8px;
+}
+
+.symptom-checkbox {
+  margin-right: 8px;
+}
+
+.diagnosis-modal-footer {
+  padding: 15px 20px;
+  border-top: 1px solid #eaeaea;
+  display: flex;
+  justify-content: flex-end;
+}
+
+.primary-btn {
+  background-color: #2e7d32;
+  color: white;
+  border: none;
+  padding: 8px 16px;
+  border-radius: 4px;
+  cursor: pointer;
+  font-weight: 500;
+  transition: background-color 0.2s;
+}
+
+.primary-btn:hover {
+  background-color: #1b5e20;
+}
+
+/* Temporary message styling */
+.temp-message {
+    opacity: 0.7;
+}

@@ -17,6 +17,7 @@
     <!-- Custom CSS -->
     {% load static %}
     <link href="{% static 'css/style.css' %}" rel="stylesheet">
+    <link rel="stylesheet" href="{% static 'css/chat.css' %}">
     {% block extra_css %}{% endblock %}
     
 </head>
@@ -31,6 +32,11 @@
                 <span class="navbar-toggler-icon"></span>
             </button>
             <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav">
+                    <li class="nav-item">
+                        <a class="nav-link" href="{% url 'home' %}"><i class="fas fa-home me-1"></i>Giới thiệu</a>
+                    </li>
+                </ul>
                 <ul class="navbar-nav ms-auto">
                     {% if user.is_authenticated %}
                         <!-- <li class="nav-item">
@@ -184,17 +190,23 @@
         </div>
     </div>
     
-    <!-- Chat Button -->
+    <!-- Chat Buttons -->
     {% if user.is_authenticated %}
     <div class="position-fixed bottom-0 end-0 m-3" style="z-index: 1050;">
-        <a href="{% url 'chatbot:chat' %}" class="btn btn-primary btn-lg rounded-circle shadow">
-            <i class="fas fa-comment-dots"></i>
-        </a>
+        <div class="d-flex flex-column align-items-end">
+            <a href="{% url 'chatbot:chat_ai' %}" class="btn btn-success btn-lg rounded-circle shadow mb-2" data-bs-toggle="tooltip" title="AI Diagnostic Chat">
+                <i class="fas fa-stethoscope"></i>
+            </a>
+            <a href="{% url 'chatbot:chat' %}" class="btn btn-primary btn-lg rounded-circle shadow" data-bs-toggle="tooltip" title="Healthcare Chat">
+                <i class="fas fa-comment-dots"></i>
+            </a>
+        </div>
     </div>
     {% endif %}
 
     <!-- Bootstrap JS with Popper -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{% static 'js/diagnosis.js' %}"></script>
     
     <!-- Extra JavaScript -->
     <script>

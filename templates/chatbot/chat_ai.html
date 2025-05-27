@@ -1,0 +1,625 @@
+{% extends "base.html" %}
+{% load static %}
+
+{% block title %}AI Diagnostic Chat | Healthcare System{% endblock %}
+
+{% block extra_css %}
+<style>
+    /* Chat container styles */
+    .chat-container {
+        height: calc(100vh - 200px);
+        min-height: 500px;
+    }
+    
+    .conversations-list {
+        max-height: calc(100vh - 250px);
+        overflow-y: auto;
+    }
+    
+    .conversation-item {
+        cursor: pointer;
+        border-radius: 5px;
+        transition: all 0.2s;
+        padding: 10px 15px;
+        margin-bottom: 5px;
+    }
+    
+    .conversation-item:hover {
+        background-color: #f0f0f0;
+    }
+    
+    .conversation-item.active {
+        background-color: #e9ecef;
+        border-left: 3px solid #3498db;
+    }
+    
+    .chat-messages {
+        height: calc(100vh - 400px);
+        overflow-y: auto;
+        padding: 1rem;
+    }
+    
+    .message {
+        max-width: 75%;
+        margin-bottom: 1rem;
+        word-wrap: break-word;
+        padding: 10px 15px;
+        border-radius: 10px;
+    }
+    
+    .message.user-message {
+        margin-left: auto;
+        background-color: #dcf8c6;
+        border-radius: 15px 15px 0 15px;
+    }
+    
+    .message.bot-message {
+        margin-right: auto;
+        background-color: #f1f0f0;
+        border-radius: 15px 15px 15px 0;
+    }
+    
+    .message-time {
+        font-size: 0.7rem;
+        color: #6c757d;
+        text-align: right;
+    }
+    
+    .chat-input-container {
+        position: absolute;
+        bottom: 1rem;
+        left: 1rem;
+        right: 1rem;
+    }
+    
+    /* AI Diagnosis specific styles */
+    .ai-diagnosis-container {
+        background-color: #f8f9fa;
+        border-radius: 10px;
+        padding: 15px;
+        margin-bottom: 15px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .ai-diagnosis-title {
+        display: flex;
+        align-items: center;
+        margin-bottom: 10px;
+        color: #2e7d32;
+        font-weight: 600;
+    }
+    
+    .ai-diagnosis-title i {
+        margin-right: 10px;
+        font-size: 1.2rem;
+    }
+    
+    .symptoms-grid {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+        gap: 10px;
+        margin-bottom: 15px;
+    }
+    
+    .symptom-checkbox-container {
+        display: flex;
+        align-items: center;
+        background-color: white;
+        padding: 8px 12px;
+        border-radius: 5px;
+        border: 1px solid #e0e0e0;
+        transition: all 0.2s;
+    }
+    
+    .symptom-checkbox-container:hover {
+        border-color: #2e7d32;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+    }
+    
+    .symptom-checkbox {
+        margin-right: 8px;
+    }
+    
+    .diagnosis-actions {
+        display: flex;
+        justify-content: flex-end;
+    }
+    
+    .start-diagnosis-btn {
+        background-color: #2e7d32;
+        color: white;
+        border: none;
+        padding: 8px 16px;
+        border-radius: 5px;
+        cursor: pointer;
+        font-weight: 500;
+        display: flex;
+        align-items: center;
+    }
+    
+    .start-diagnosis-btn:hover {
+        background-color: #1b5e20;
+    }
+    
+    .start-diagnosis-btn i {
+        margin-right: 8px;
+    }
+    
+    /* Diagnosis results styles */
+    .diagnosis-results {
+        margin-top: 15px;
+        padding: 15px;
+        background-color: white;
+        border-radius: 8px;
+        border: 1px solid #e0e0e0;
+    }
+    
+    .diagnosis-item {
+        display: flex;
+        justify-content: space-between;
+        padding: 8px;
+        border-bottom: 1px solid #f0f0f0;
+    }
+    
+    .diagnosis-item:last-child {
+        border-bottom: none;
+    }
+    
+    .disease-name {
+        font-weight: 500;
+    }
+    
+    .disease-probability {
+        font-weight: 600;
+    }
+    
+    .high-probability {
+        color: #2e7d32;
+    }
+    
+    .medium-probability {
+        color: #ff9800;
+    }
+    
+    .low-probability {
+        color: #f44336;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<div class="container-fluid py-4">
+    <div class="row">
+        <div class="col-md-3">
+            <div class="card h-100">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">Conversations</h5>
+                    <button id="new-conversation-btn" class="btn btn-sm btn-primary">
+                        <i class="fas fa-plus"></i>
+                    </button>
+                </div>
+                <div class="card-body p-0">
+                    <div class="conversations-list">
+                        {% if conversations %}
+                            {% for conv in conversations %}
+                                <div class="conversation-item {% if conv.id == current_conversation.id %}active{% endif %}" data-id="{{ conv.id }}">
+                                    <div class="d-flex justify-content-between align-items-center">
+                                        <div>
+                                            <h6 class="mb-0">{{ conv.title }}</h6>
+                                            <small class="text-muted">{{ conv.updated_at|date:"M d, Y H:i" }}</small>
+                                        </div>
+                                        <button class="btn btn-sm text-danger delete-conversation-btn" data-id="{{ conv.id }}">
+                                            <i class="fas fa-trash"></i>
+                                        </button>
+                                    </div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center p-4">
+                                <p class="text-muted">No conversations yet</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+        
+        <div class="col-md-9">
+            <div class="card h-100 chat-container">
+                <div class="card-header bg-white d-flex justify-content-between align-items-center">
+                    <h5 class="card-title mb-0">
+                        {% if current_conversation %}
+                            {{ current_conversation.title }}
+                        {% else %}
+                            AI Diagnostic Chat
+                        {% endif %}
+                    </h5>
+                    <div class="form-check form-switch">
+                        <input class="form-check-input" type="checkbox" id="language-toggle">
+                        <label class="form-check-label" for="language-toggle" id="language-label">English</label>
+                    </div>
+                </div>
+                <div class="card-body position-relative p-0">
+                    <!-- AI Diagnosis Section -->
+                    <div class="ai-diagnosis-container mx-3 mt-3">
+                        <div class="ai-diagnosis-title">
+                            <i class="fas fa-stethoscope"></i>
+                            <span id="diagnosis-title">AI Diagnosis - Select Symptoms</span>
+                        </div>
+                        <div class="symptoms-grid" id="symptoms-grid">
+                            <!-- Symptoms will be dynamically loaded here -->
+                        </div>
+                        <div class="diagnosis-actions">
+                            <button id="start-diagnosis-btn" class="start-diagnosis-btn">
+                                <i class="fas fa-heartbeat"></i>
+                                <span id="start-diagnosis-text">Start Diagnosis</span>
+                            </button>
+                        </div>
+                    </div>
+                    
+                    <div class="chat-messages" id="chat-messages">
+                        {% if messages %}
+                            {% for msg in messages %}
+                                <div class="message {{ msg.sender }}-message">
+                                    <div class="message-content">{{ msg.content|linebreaks }}</div>
+                                    <div class="message-time">{{ msg.timestamp|date:"H:i" }}</div>
+                                </div>
+                            {% endfor %}
+                        {% else %}
+                            <div class="text-center py-5">
+                                <i class="fas fa-robot fa-4x mb-3 text-primary"></i>
+                                <h4>Welcome to AI Diagnostic Assistant</h4>
+                                <p>Select symptoms above or chat with me about your health concerns</p>
+                            </div>
+                        {% endif %}
+                    </div>
+                    
+                    <div class="chat-input-container">
+                        <form id="message-form" class="d-flex">
+                            {% csrf_token %}
+                            <input type="hidden" id="conversation-id" value="{{ current_conversation.id|default:'' }}">
+                            <input type="text" id="message-input" class="form-control me-2" placeholder="Type your message...">
+                            <button type="submit" class="btn btn-primary">
+                                <i class="fas fa-paper-plane"></i>
+                            </button>
+                        </form>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+
+<!-- Hidden symptom data elements -->
+<div style="display: none;">
+    <script id="symptoms-en-data" type="application/json">
+        {{ symptoms_en|safe }}
+    </script>
+    <script id="symptoms-vi-data" type="application/json">
+        {{ symptoms_vi|safe }}
+    </script>
+</div>
+{% endblock %}
+
+{% block extra_js %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const messageForm = document.getElementById('message-form');
+        const messageInput = document.getElementById('message-input');
+        const conversationId = document.getElementById('conversation-id');
+        const chatMessages = document.getElementById('chat-messages');
+        const newConversationBtn = document.getElementById('new-conversation-btn');
+        const conversationItems = document.querySelectorAll('.conversation-item');
+        const deleteButtons = document.querySelectorAll('.delete-conversation-btn');
+        const languageToggle = document.getElementById('language-toggle');
+        const languageLabel = document.getElementById('language-label');
+        const diagnosisTitle = document.getElementById('diagnosis-title');
+        const startDiagnosisBtn = document.getElementById('start-diagnosis-btn');
+        const startDiagnosisText = document.getElementById('start-diagnosis-text');
+        const symptomsGrid = document.getElementById('symptoms-grid');
+        
+        // Symptoms data
+        const symptomsEn = JSON.parse(document.getElementById('symptoms-en-data').textContent);
+        const symptomsVi = JSON.parse(document.getElementById('symptoms-vi-data').textContent);
+        let currentLanguage = 'en';
+        const selectedSymptoms = [];
+        
+        // Language toggle
+        languageToggle.addEventListener('change', function() {
+            currentLanguage = this.checked ? 'vi' : 'en';
+            languageLabel.textContent = this.checked ? 'Tiếng Việt' : 'English';
+            updateUILanguage();
+            loadSymptoms();
+        });
+        
+        // Update UI text based on language
+        function updateUILanguage() {
+            if (currentLanguage === 'vi') {
+                diagnosisTitle.textContent = 'Chẩn đoán AI - Chọn triệu chứng';
+                startDiagnosisText.textContent = 'Bắt đầu chẩn đoán';
+                messageInput.placeholder = 'Nhập tin nhắn của bạn...';
+            } else {
+                diagnosisTitle.textContent = 'AI Diagnosis - Select Symptoms';
+                startDiagnosisText.textContent = 'Start Diagnosis';
+                messageInput.placeholder = 'Type your message...';
+            }
+        }
+        
+        // Load symptoms based on language
+        function loadSymptoms() {
+            const symptoms = currentLanguage === 'vi' ? symptomsVi : symptomsEn;
+            symptomsGrid.innerHTML = '';
+            
+            symptoms.forEach(symptom => {
+                const isSelected = selectedSymptoms.includes(symptom);
+                const checkboxContainer = document.createElement('div');
+                checkboxContainer.className = 'symptom-checkbox-container';
+                checkboxContainer.innerHTML = `
+                    <input type="checkbox" id="symptom-${sanitizeId(symptom)}" class="symptom-checkbox" value="${symptom}" ${isSelected ? 'checked' : ''}>
+                    <label for="symptom-${sanitizeId(symptom)}">${symptom}</label>
+                `;
+                symptomsGrid.appendChild(checkboxContainer);
+                
+                // Add event listener
+                const checkbox = checkboxContainer.querySelector('input');
+                checkbox.addEventListener('change', function() {
+                    if (this.checked) {
+                        if (!selectedSymptoms.includes(symptom)) {
+                            selectedSymptoms.push(symptom);
+                        }
+                    } else {
+                        const index = selectedSymptoms.indexOf(symptom);
+                        if (index !== -1) {
+                            selectedSymptoms.splice(index, 1);
+                        }
+                    }
+                });
+            });
+        }
+        
+        // Sanitize ID
+        function sanitizeId(str) {
+            return str.toString().toLowerCase().replace(/[^a-z0-9]/g, '-');
+        }
+        
+        // Start diagnosis
+        startDiagnosisBtn.addEventListener('click', function() {
+            if (selectedSymptoms.length === 0) {
+                alert(currentLanguage === 'vi' ? 
+                    'Vui lòng chọn ít nhất một triệu chứng.' : 
+                    'Please select at least one symptom.');
+                return;
+            }
+            
+            // Create symptom vector array (0 or 1 for each symptom)
+            const symptoms = currentLanguage === 'vi' ? symptomsVi : symptomsEn;
+            const symptomVector = Array(symptoms.length).fill(0);
+            
+            // Create mapping of symptom names to indices
+            const symptomIndices = {};
+            symptoms.forEach((symptom, index) => {
+                symptomIndices[symptom] = index;
+            });
+            
+            // Set 1 for selected symptoms
+            selectedSymptoms.forEach(symptom => {
+                const index = symptomIndices[symptom];
+                if (index !== undefined) {
+                    symptomVector[index] = 1;
+                }
+            });
+            
+            // Show loading message
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'message bot-message';
+            loadingMsg.innerHTML = `
+                <div class="message-content">${currentLanguage === 'vi' ? 'Đang phân tích triệu chứng...' : 'Analyzing symptoms...'}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            chatMessages.appendChild(loadingMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Send to server
+            fetch('{% url "chatbot:ai_diagnosis" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    conversation_id: conversationId.value,
+                    symptoms: symptomVector,
+                    language: currentLanguage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading message
+                loadingMsg.remove();
+                
+                if (data.status === 'success') {
+                    // Add the diagnosis as a bot message
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot-message';
+                    botMessageDiv.innerHTML = `
+                        <div class="message-content">${data.message_content.replace(/\n/g, '<br>')}</div>
+                        <div class="message-time">${data.timestamp}</div>
+                    `;
+                    chatMessages.appendChild(botMessageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                    
+                    // Clear selected symptoms
+                    selectedSymptoms.length = 0;
+                    loadSymptoms();
+                } else {
+                    console.error('Error:', data.message);
+                    // Show error message
+                    alert(currentLanguage === 'vi' ? 
+                        'Đã xảy ra lỗi khi thực hiện chẩn đoán.' : 
+                        'An error occurred while performing the diagnosis.');
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                loadingMsg.remove();
+                
+                // Show error message
+                alert(currentLanguage === 'vi' ? 
+                    'Đã xảy ra lỗi khi kết nối đến máy chủ.' : 
+                    'An error occurred while connecting to the server.');
+            });
+        });
+        
+        // Handle message submission
+        messageForm.addEventListener('submit', function(e) {
+            e.preventDefault();
+            
+            const message = messageInput.value.trim();
+            if (!message) return;
+            
+            // Add user message to UI
+            const userMessageDiv = document.createElement('div');
+            userMessageDiv.className = 'message user-message';
+            userMessageDiv.innerHTML = `
+                <div class="message-content">${message}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            chatMessages.appendChild(userMessageDiv);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Clear input
+            messageInput.value = '';
+            
+            // Show loading message
+            const loadingMsg = document.createElement('div');
+            loadingMsg.className = 'message bot-message loading-message';
+            loadingMsg.innerHTML = `
+                <div class="message-content">${currentLanguage === 'vi' ? 'Đang trả lời...' : 'Typing...'}</div>
+                <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+            `;
+            chatMessages.appendChild(loadingMsg);
+            chatMessages.scrollTop = chatMessages.scrollHeight;
+            
+            // Send message to server
+            fetch('{% url "chatbot:send_message" %}', {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                },
+                body: JSON.stringify({
+                    message: message,
+                    conversation_id: conversationId.value,
+                    language: currentLanguage
+                })
+            })
+            .then(response => response.json())
+            .then(data => {
+                // Remove loading message
+                document.querySelector('.loading-message').remove();
+                
+                if (data.status === 'success') {
+                    // Set conversation ID if new
+                    if (!conversationId.value) {
+                        conversationId.value = data.conversation_id;
+                        // Reload page to show the new conversation in the list
+                        window.location.href = `{% url 'chatbot:chat_ai' %}?conversation_id=${data.conversation_id}`;
+                        return;
+                    }
+                    
+                    // Add bot response to UI
+                    const botMessageDiv = document.createElement('div');
+                    botMessageDiv.className = 'message bot-message';
+                    botMessageDiv.innerHTML = `
+                        <div class="message-content">${data.bot_message.content.replace(/\n/g, '<br>')}</div>
+                        <div class="message-time">${data.bot_message.timestamp}</div>
+                    `;
+                    chatMessages.appendChild(botMessageDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                } else {
+                    console.error('Error:', data.message);
+                    
+                    // Show error message
+                    const errorDiv = document.createElement('div');
+                    errorDiv.className = 'message bot-message';
+                    errorDiv.innerHTML = `
+                        <div class="message-content text-danger">${currentLanguage === 'vi' ? 'Đã xảy ra lỗi. Vui lòng thử lại.' : 'An error occurred. Please try again.'}</div>
+                        <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                    `;
+                    chatMessages.appendChild(errorDiv);
+                    chatMessages.scrollTop = chatMessages.scrollHeight;
+                }
+            })
+            .catch(error => {
+                console.error('Error:', error);
+                document.querySelector('.loading-message').remove();
+                
+                // Show error message
+                const errorDiv = document.createElement('div');
+                errorDiv.className = 'message bot-message';
+                errorDiv.innerHTML = `
+                    <div class="message-content text-danger">${currentLanguage === 'vi' ? 'Lỗi kết nối. Vui lòng thử lại sau.' : 'Connection error. Please try again later.'}</div>
+                    <div class="message-time">${new Date().toLocaleTimeString([], {hour: '2-digit', minute:'2-digit'})}</div>
+                `;
+                chatMessages.appendChild(errorDiv);
+                chatMessages.scrollTop = chatMessages.scrollHeight;
+            });
+        });
+        
+        // New conversation
+        newConversationBtn.addEventListener('click', function() {
+            fetch('{% url "chatbot:create_conversation" %}', {
+                method: 'POST',
+                headers: {
+                    'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                }
+            })
+            .then(response => response.json())
+            .then(data => {
+                if (data.status === 'success') {
+                    window.location.href = `{% url 'chatbot:chat_ai' %}?conversation_id=${data.conversation_id}`;
+                }
+            })
+            .catch(error => console.error('Error:', error));
+        });
+        
+        // Navigate to conversation
+        conversationItems.forEach(item => {
+            item.addEventListener('click', function(e) {
+                if (e.target.closest('.delete-conversation-btn')) return;
+                
+                const id = this.dataset.id;
+                window.location.href = `{% url 'chatbot:chat_ai' %}?conversation_id=${id}`;
+            });
+        });
+        
+        // Delete conversation
+        deleteButtons.forEach(button => {
+            button.addEventListener('click', function(e) {
+                e.stopPropagation();
+                
+                if (confirm('Are you sure you want to delete this conversation?')) {
+                    const id = this.dataset.id;
+                    
+                    fetch(`{% url 'chatbot:delete_conversation' conversation_id=999 %}`.replace('999', id), {
+                        method: 'POST',
+                        headers: {
+                            'X-CSRFToken': document.querySelector('[name=csrfmiddlewaretoken]').value
+                        }
+                    })
+                    .then(response => response.json())
+                    .then(data => {
+                        if (data.status === 'success') {
+                            window.location.href = `{% url 'chatbot:chat_ai' %}`;
+                        }
+                    })
+                    .catch(error => console.error('Error:', error));
+                }
+            });
+        });
+        
+        // Initialize symptoms
+        loadSymptoms();
+    });
+</script>
+{% endblock %}
